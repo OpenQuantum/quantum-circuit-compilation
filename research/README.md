@@ -46,6 +46,22 @@
 
 ## 复现入口
 
+### 大型 DQI 电路文件
+
+`candidates/*/dqi.kmb` 是预生成的二进制量子电路，不是 Python 源码。历史 `incumbent`、`public-best`、`rotated50` 中的 DQI 文件内容完全相同，每份 529,240,286 字节（约 505 MiB），SHA-256 为 `1ab3ac53d442d74410cc753d140fb3008057672d2fcde67b563bfef3808339e5`。
+
+为减少重复文件，已删除 `incumbent/dqi.kmb` 历史副本；本地保留 `rotated50/dqi.kmb` 供当前 Quantum World seed 使用。所有 `candidates/**/dqi.kmb` 已作为本地数据排除 Git 跟踪，并从本地初始提交中移除。新克隆代码后，运行 DQI 前需要自行恢复该文件；仅运行源码或接口测试无需此数据。
+
+文件可从前文的 Heliosli 公开数据集恢复，发布清单 `sources/heliosli-release/QCC_RELEASE_MANIFEST.json` 记录了 `dqi.kmb.xz` 的存储名和解压后 SHA-256。下载对应版本后，从项目根目录解压并验证：
+
+```bash
+xz -dk research/sources/heliosli-release/dqi.kmb.xz
+shasum -a 256 research/sources/heliosli-release/dqi.kmb
+cp research/sources/heliosli-release/dqi.kmb research/candidates/rotated50/dqi.kmb
+```
+
+应先确认输出 SHA-256 与上文一致，再复制到 seed。如果需要重新运行历史比较，可从 `rotated50/dqi.kmb` 复制回 `incumbent/dqi.kmb`。删除工作区文件和添加 `.gitignore` 不会移除既有提交里的大文件；推送前还需清理对应 Git 历史，且保留其他已暂存修改。
+
 从项目根目录运行。完整中间记录位于 `receipts/`，候选位于 `candidates/`。
 
 ```bash

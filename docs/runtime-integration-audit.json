@@ -21,5 +21,7 @@
   "runtime_python": "3.13.14",
   "integration_implemented": false,
   "real_model_or_hub_tested": false,
-  "proposed_integration": "A separate quantum-world process using the existing World tool discovery and Action/Outcome contract; asynchronous job IDs for full verification; metadata-only responses."
+  "proposed_integration": "A separate quantum-world process using the existing World tool discovery and Action/Outcome contract; asynchronous job IDs for full verification; metadata-only responses.",
+  "record_scope": "Historical source audit on 2026-11-06; embedded checkout removed on 2026-11-09. Not a current runtime dependency or current integration status.",
+  "current_interface": "docs/agent-interface.md"
 }

@@ -1,9 +1,9 @@
 # Quantum World
 
-本地量子电路搜索环境，供 `OpenQuantum/star-agent-runtime` 通过 Star Hub 调用。agent 编写生成器、运行官方验证、读取成本、选择候选；不微调模型权重。
+本地量子电路搜索环境，供独立仓库 [OpenQuantum/star-agent-runtime](https://github.com/OpenQuantum/star-agent-runtime) 通过 Star Hub 调用。本项目不包含 Runtime 源码或 Python 包依赖，双方独立部署；接口约定见 [外部 Agent 接口](../docs/agent-interface.md)。agent 编写生成器、运行官方验证、读取成本、选择候选；不微调模型权重。
 
 ```text
-自研 agent → Runtime Action → Star Hub → Quantum World
+外部仓库自研 agent → Runtime Action → Star Hub → 本项目 Quantum World
                                        ├─ SQLite 候选、实验、Action 账本
                                        ├─ Docker 执行候选生成器
                                        └─ Python 3.12 官方预检、验证器
@@ -58,7 +58,7 @@ action_timeout = 30.0
 max_result_bytes = 65536
 ```
 
-World 固定 SDK 为 star-hub `c237172f788412a93a3647129572b546ca949603`，与本地干净 Runtime checkout 使用同一提交。不会修改另一个有本地改动的 Runtime 工作区。
+World 固定 SDK 为 star-hub `c237172f788412a93a3647129572b546ca949603`，这是公共协议 SDK 依赖，不是 agent runtime 依赖。外部 Runtime 使用兼容协议即可，不共享源码目录或 Python 环境。
 
 ## agent 工具与交互
 
@@ -111,13 +111,13 @@ agent 工具目录没有 approve/submit；候选容器无网络，不挂载 Worl
 
 ```bash
 .venv/bin/python -m unittest discover -s tests -v
-PYTHONPATH=src ../integrations/star-agent-runtime/.venv/bin/python -m unittest discover -s tests_runtime -v
+.venv/bin/python examples/agent_client.py --prompt-token  # 需要已启动的 Hub 和 World
 .venv/bin/python examples/verify_baseline.py --docker --mode quick --tasks invsqrt
 # 三项完整基线验证本机约 17 分钟，不会访问 Kaggle。
 .venv/bin/python examples/verify_baseline.py --mode full --tasks invsqrt dqi dfthcsos
 ```
 
-2026-11-06 本机验证：26 项单元测试与 1 项 Runtime Action/World 往返测试通过；往返测试仅替换网络 I/O，使用真实 Runtime、工具桥、World 和 SDK Schema，不调用模型。Docker 中运行生成器后，官方快速验证通过。三项默认完整验证全部通过，原始记录见 `validation/baseline-full.json`；官方基线未超过配置门槛，打包返回 `NO_IMPROVEMENT`。未执行真实 Kaggle 上传，也未做生产 Hub 或付费模型的端到端验收。
+2026-11-06 历史验证：26 项单元测试与 1 项 Runtime Action/World 往返测试通过，当时使用临时 Runtime checkout。2026-11-09 起已移除内嵌 Runtime 及直接导入其内部类的测试，改用 `tests/test_protocol_contract.py` 验证公共协议；常规测试只使用 World 自己的环境，不需另一个仓库。Docker 中运行生成器后，官方快速验证通过。三项默认完整验证全部通过，原始记录见 `validation/baseline-full.json`；官方基线未超过配置门槛，打包返回 `NO_IMPROVEMENT`。未执行真实 Kaggle 上传，也未做生产 Hub 或付费模型的端到端验收。
 
 | 文件 | 职责 |
 |---|---|

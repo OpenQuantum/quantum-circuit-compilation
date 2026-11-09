@@ -6,9 +6,9 @@
 
 ## 代码结构
 
-代码分为官方评分代码、优化研究代码、Quantum World、自研 agent 运行时，以及独立验证与提交脚本。下面展开主要源码；批量电路、下载包、日志和依赖按目录归纳，省略各 Python 包的 `__init__.py`。
+本项目包含官方评分代码、优化研究代码、Quantum World，以及独立验证与提交脚本；Agent Runtime 在外部仓库独立维护，通过公共协议连接。下面展开主要源码；批量电路、下载包、日志和依赖按目录归纳，省略各 Python 包的 `__init__.py`。
 
-```text
+```bash
 quantum-search/
 ├── README.md                          # 项目说明、结构、执行关系与基线记录
 ├── requirements-local.lock.txt        # 官方验证环境依赖，Python 3.12
@@ -95,38 +95,19 @@ quantum-search/
 │   │   ├── gateway.py                 # 操作员进程到 Kaggle 的桥接
 │   │   └── kaggle_gateway.py           # 查询最高分、分块上传、保存回执
 │   ├── examples/
+│   │   ├── agent_client.py            # 仅使用公共 SDK 的独立客户端
 │   │   ├── identity.py                # Docker 内读写基线电路的生成器示例
 │   │   └── verify_baseline.py          # 基线真实验证入口，不访问 Kaggle
 │   ├── tests/
-│   │   └── test_world.py              # 业务、隔离、审批、进程等测试
-│   ├── tests_runtime/
-│   │   └── test_runtime_bridge.py      # 真实 Runtime 到 World 的往返测试
+│   │   ├── test_world.py              # 业务、隔离、审批、进程等测试
+│   │   └── test_protocol_contract.py  # 公共协议接口测试，无 Runtime 依赖
 │   └── validation/
 │       ├── baseline-full.json         # 三项完整验证记录
 │       └── baseline-quick-docker.json # Docker 生成与快速验证记录
 │
-├── integrations/
-│   ├── runtime-audit.json             # Runtime 接入检查记录
-│   └── star-agent-runtime/            # 自研 agent 仓库的独立 checkout
-│       ├── configs.example.toml
-│       ├── docs/
-│       ├── examples/
-│       ├── tests/
-│       └── src/agent_runtime/
-│           ├── bootstrap.py           # 组装运行时
-│           ├── runtime.py             # 生命周期
-│           ├── config/                # 配置
-│           ├── contracts/             # 模型、任务、工具等数据契约
-│           ├── core/                  # 消息总线、Actor、存储、生成机制
-│           ├── adapters/              # 模型、协议、执行、存储适配
-│           ├── services/              # 对话、生成、认知等服务
-│           └── modules/
-│               ├── action/            # 工具发现、校验、派发、回执
-│               ├── cognition/         # 认知与任务决策
-│               ├── task/              # 任务协调、恢复、挂起
-│               ├── conversation/      # 对话处理
-│               ├── perception/        # 输入感知
-│               └── …                  # memory、learning 等其他模块
+├── docs/
+│   ├── agent-interface.md             # 外部 Runtime 接口、配置与联调
+│   └── runtime-integration-audit.json # 历史审计记录，非运行依赖
 │
 ├── runs/                              # 原始基线验证与提交记录
 ├── artifacts/                         # 已打包的提交文件
@@ -135,7 +116,7 @@ quantum-search/
 └── .quantum-world-smoke/               # 本地验证实验数据
 ```
 
-`official/` 提供判定标准；`research/` 提供优化算法与已有候选；`quantum-world/` 提供 agent 可交互的执行环境；`integrations/star-agent-runtime/` 负责模型决策和工具调用。World 默认从配置的 seed 复制输入，已有研究脚本不会自动成为 agent 工具；agent 通过 `CreateCandidate` 提供生成器代码。
+`official/` 提供判定标准；`research/` 提供优化算法与已有候选；`quantum-world/` 提供 agent 可交互的执行环境；模型决策和工具调用由外部 [star-agent-runtime 仓库](https://github.com/OpenQuantum/star-agent-runtime)负责；见 [外部接口](docs/agent-interface.md)。World 默认从配置的 seed 复制输入，已有研究脚本不会自动成为 agent 工具；agent 通过 `CreateCandidate` 提供生成器代码。
 
 ## 实际执行关系
 
@@ -190,7 +171,7 @@ quick 仅作筛选，不能用于打包。合并本地估分是三个 `reference
 | 修改 agent 工具及业务流程 | [tools.py](quantum-world/src/quantum_world/tools.py)、[service.py](quantum-world/src/quantum_world/service.py) |
 | 修改候选执行与官方验证调度 | [runner.py](quantum-world/src/quantum_world/runner.py) |
 | 改进电路和数值优化算法 | [research](research/) |
-| 查看协议工具桥 | [world_tools.py](integrations/star-agent-runtime/src/agent_runtime/modules/action/external/world_tools.py) |
+| 对接独立 Agent Runtime | [公共协议、配置与联调](docs/agent-interface.md) |
 | 安装、配置、启动与人工审批 | [Quantum World README](quantum-world/README.md) |
 
 **线上结果：2026-11-06 11:00（北京时间）查询，提交 `58042263` 已 `COMPLETE`，公开分数 `1.00000`，无评分错误。** 机器可读回执见 `runs/submission-status.json`。
