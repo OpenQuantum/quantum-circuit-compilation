@@ -1,0 +1,68 @@
+{
+  "invsqrt": {
+    "qubits": 260,
+    "bits": 1,
+    "registers": 1
+  },
+  "dqi": {
+    "qubits": 1893,
+    "bits": 49154,
+    "registers": 4165
+  },
+  "angle_k_0": {
+    "qubits": 119
+  },
+  "angle_k_1": {
+    "qubits": 119
+  },
+  "angle_k_2": {
+    "qubits": 119
+  },
+  "angle_k_3": {
+    "qubits": 119
+  },
+  "angle_k_4": {
+    "qubits": 119
+  },
+  "angle_k_5": {
+    "qubits": 119
+  },
+  "angle_k_6": {
+    "qubits": 119
+  },
+  "angle_k_7": {
+    "qubits": 119
+  },
+  "angle_k_8": {
+    "qubits": 119
+  },
+  "angle_k_9": {
+    "qubits": 119
+  },
+  "array_shapes": {
+    "U": [
+      65,
+      60,
+      76
+    ],
+    "W": [
+      65,
+      60,
+      60
+    ],
+    "H2_I": [
+      65,
+      60
+    ],
+    "H1_I": [],
+    "Hsym_lower": [
+      2926
+    ],
+    "tree_edges": [
+      75,
+      2
+    ]
+  },
+  "status": "PREFLIGHT_PASS",
+  "full_verification": false
+}

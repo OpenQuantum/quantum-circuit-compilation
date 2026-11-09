@@ -1,0 +1,162 @@
+[
+  {
+    "id": 753307,
+    "title": "[Update] kickmix is now on PyPI (Windows, Linux, and macOS wheels)",
+    "author": "",
+    "date": "2026-10-27 20:22:33.920000",
+    "comments": 1,
+    "votes": 17
+  },
+  {
+    "id": 750817,
+    "title": "How to get started + Competition's Official Discord",
+    "author": "",
+    "date": "2026-10-19 21:09:01.111000",
+    "comments": 1,
+    "votes": 12
+  },
+  {
+    "id": 752757,
+    "title": "20.39 circuits, let's all reach the plateau!",
+    "author": "",
+    "date": "2026-10-26 07:28:15.778000",
+    "comments": 11,
+    "votes": 20
+  },
+  {
+    "id": 751968,
+    "title": "Can we have a per-task leaderboard?",
+    "author": "",
+    "date": "2026-10-23 08:28:41.483000",
+    "comments": 6,
+    "votes": 19
+  },
+  {
+    "id": 754652,
+    "title": "what to learn from this competition",
+    "author": "",
+    "date": "2026-11-01 03:00:38.382000",
+    "comments": 18,
+    "votes": 18
+  },
+  {
+    "id": 755427,
+    "title": "Final evaluation scope: published verifier or additional correctness checks?",
+    "author": "",
+    "date": "2026-11-03 15:59:17.554000",
+    "comments": 0,
+    "votes": 14
+  },
+  {
+    "id": 754970,
+    "title": "Free introductory guide to FTQC circuit optimization for this competition",
+    "author": "",
+    "date": "2026-11-02 14:04:14.246000",
+    "comments": 1,
+    "votes": 14
+  },
+  {
+    "id": 752005,
+    "title": "Idea for hackathon",
+    "author": "",
+    "date": "2026-10-23 12:15:33.775000",
+    "comments": 1,
+    "votes": 11
+  },
+  {
+    "id": 753607,
+    "title": "DQI: The baselines RATIO: 60.11134658530358",
+    "author": "",
+    "date": "2026-10-28 18:44:18.535000",
+    "comments": 10,
+    "votes": 10
+  },
+  {
+    "id": 752010,
+    "title": "Winner source-delivery requirements for public compiled inputs",
+    "author": "",
+    "date": "2026-10-23 12:28:54.593000",
+    "comments": 4,
+    "votes": 9
+  },
+  {
+    "id": 753654,
+    "title": "Question regarding longest leader prize",
+    "author": "",
+    "date": "2026-10-28 21:46:12.216000",
+    "comments": 0,
+    "votes": 8
+  },
+  {
+    "id": 752550,
+    "title": "What are you guys scoring in each task?",
+    "author": "",
+    "date": "2026-10-25 10:40:21.249000",
+    "comments": 16,
+    "votes": 7
+  },
+  {
+    "id": 753403,
+    "title": "An interactive look inside the invsqrt circuit",
+    "author": "",
+    "date": "2026-10-28 02:43:52.265000",
+    "comments": 4,
+    "votes": 6
+  },
+  {
+    "id": 753404,
+    "title": "This competition has gone absolutely wild！",
+    "author": "",
+    "date": "2026-10-28 02:49:55.317000",
+    "comments": 8,
+    "votes": 6
+  },
+  {
+    "id": 752949,
+    "title": "There is room for local models too: a one-person setup with a limited AI budget",
+    "author": "",
+    "date": "2026-10-26 19:51:27.663000",
+    "comments": 0,
+    "votes": 6
+  },
+  {
+    "id": 754805,
+    "title": "The Three Biggest Challenges in Quantum AI comp: My Early Prediction",
+    "author": "",
+    "date": "2026-11-01 18:25:30.852000",
+    "comments": 15,
+    "votes": 5
+  },
+  {
+    "id": 753633,
+    "title": "dfthcsos: why λ_eff can't go much below ~46.8 ",
+    "author": "",
+    "date": "2026-10-28 20:13:42.412000",
+    "comments": 1,
+    "votes": 5
+  },
+  {
+    "id": 752659,
+    "title": "Developing on a Mac? A native kickmix build that runs the official verifiers locally (Apple Silicon, open source)",
+    "author": "",
+    "date": "2026-10-25 19:57:24.146000",
+    "comments": 2,
+    "votes": 5
+  },
+  {
+    "id": 753185,
+    "title": "What didn't work: 30-odd measured nulls across invsqrt, dqi and the chemistry",
+    "author": "",
+    "date": "2026-10-27 12:39:59.276000",
+    "comments": 11,
+    "votes": 5
+  },
+  {
+    "id": 753660,
+    "title": "  Permission request: reuse of the QuantumAI DQI decoder (jday96314)",
+    "author": "",
+    "date": "2026-10-28 22:08:55.659000",
+    "comments": 3,
+    "votes": 5
+  }
+]

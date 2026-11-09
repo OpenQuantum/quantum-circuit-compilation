@@ -1,0 +1,25 @@
+{
+  "repository": "https://github.com/OpenQuantum/star-agent-runtime.git",
+  "commit": "978837bdbc5193028e7b22a3a9f552c9cdf39f73",
+  "source_modifications": "",
+  "dependency_install": "uv sync --locked --python 3.13: PASS",
+  "verification": {
+    "offline_core_demo": "PASS",
+    "local_service_and_world_settings_tests": {
+      "passed": 18
+    },
+    "world_tool_tests": {
+      "passed": 11
+    },
+    "local_agent_offline_example": {
+      "status": "FAIL",
+      "code": "INVALID_TOOL_RESULT",
+      "diagnosis": "RunContext.from_request requires humanClientId, but LocalAgentService builds a local context without that field; call id/name/arguments/status and ownership comparisons otherwise match."
+    }
+  },
+  "quantum_environment_python": "3.12.13",
+  "runtime_python": "3.13.14",
+  "integration_implemented": false,
+  "real_model_or_hub_tested": false,
+  "proposed_integration": "A separate quantum-world process using the existing World tool discovery and Action/Outcome contract; asynchronous job IDs for full verification; metadata-only responses."
+}

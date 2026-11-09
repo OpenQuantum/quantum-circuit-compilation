@@ -1,0 +1,30 @@
+{
+  "id": "manwithacat/the-real-150k-was-the-friends-we-made",
+  "id_no": 140715781,
+  "title": "The Real $150K Was the Friends We Made",
+  "code_file": "the-real-150k-was-the-friends-we-made.ipynb",
+  "language": "python",
+  "kernel_type": "notebook",
+  "is_private": false,
+  "enable_gpu": false,
+  "enable_tpu": false,
+  "enable_internet": false,
+  "keywords": [],
+  "dataset_sources": [
+    "manwithacat/kickmix-fork-wheels",
+    "manwithacat/kickmix-engine-wheels",
+    "manwithacat/vqcc-hedge-wizardry",
+    "manwithacat/vqcc-chemistry-negative-results",
+    "manwithacat/vqcc-apache-public-circuits"
+  ],
+  "kernel_sources": [
+    "manwithacat/dqi-salt-check-public-frontier",
+    "manwithacat/kickmix-tools"
+  ],
+  "competition_sources": [
+    "google-verifiable-quantum-circuit-compilation"
+  ],
+  "model_sources": [],
+  "docker_image": "gcr.io/kaggle-images/python@sha256:17b2fc7f27c25c6c2fd4230ec8e66097ab2b89fc88e1e4d6f338b72e1ee0bc3e",
+  "machine_shape": "None"
+}

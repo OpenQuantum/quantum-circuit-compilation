@@ -1,0 +1,11 @@
+{
+  "source": "research/candidates/incumbent/invsqrt.kmb",
+  "output": "research/candidates/rewritten/invsqrt.kmb",
+  "rewrites": {
+    "cancel_CX": 1405,
+    "cancel_CZ": 10,
+    "cancel_X": 55
+  },
+  "before": "<km.OperationStatistics num_instructions=47723 num_toffoli_like=1423 num_t_like=10>",
+  "after": "<km.OperationStatistics num_instructions=44783 num_toffoli_like=1423 num_t_like=10>"
+}

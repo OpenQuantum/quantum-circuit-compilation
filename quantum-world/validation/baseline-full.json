@@ -1,0 +1,86 @@
+{
+  "mode": "full",
+  "docker": false,
+  "kaggle_called": false,
+  "experiments": [
+    {
+      "candidate_id": null,
+      "created_at": "2026-11-06T08:05:54.405621+00:00",
+      "error": null,
+      "finished_at": "2026-11-06T08:18:05.128347+00:00",
+      "id": "exp-362b90b66a3a4da6a672bf4d651c2f24",
+      "mode": "full",
+      "result": {
+        "diagnostic_cost": 2076774.233715282,
+        "full": true,
+        "num_qubits": 260,
+        "phase_errors": null,
+        "status": "PASS",
+        "task_cost": 2076774.233715282,
+        "value_errors": null,
+        "verified_shots": 200540928
+      },
+      "salt": "qw-independent-draw-b510166815434b30b5e2de24fbb716da",
+      "started_at": "2026-11-06T08:05:54.406746+00:00",
+      "status": "succeeded",
+      "task": "invsqrt",
+      "logs": {
+        "preflight.stdout": "{\"status\": \"PASS\", \"input\": \"/Users/gwh/Documents/ChatGPT/cs/quantum-search/.quantum-world-smoke/experiments/exp-362b90b66a3a4da6a672bf4d651c2f24/input/invsqrt.kmb\"}\n",
+        "verify.stderr": ""
+      }
+    },
+    {
+      "candidate_id": null,
+      "created_at": "2026-11-06T08:18:05.135897+00:00",
+      "error": null,
+      "finished_at": "2026-11-06T08:22:04.870999+00:00",
+      "id": "exp-641ade5f07e34921a3ac79b7c6b8137f",
+      "mode": "full",
+      "result": {
+        "diagnostic_cost": 24439466129707.902,
+        "full": true,
+        "num_qubits": 1893,
+        "phase_errors": 0,
+        "status": "PASS",
+        "task_cost": 24439466129707.902,
+        "value_errors": 0,
+        "verified_shots": 102400
+      },
+      "salt": "qw-independent-draw-9d5dd5cea6d34bbbbffcfb9384598857",
+      "started_at": "2026-11-06T08:18:05.136278+00:00",
+      "status": "succeeded",
+      "task": "dqi",
+      "logs": {
+        "preflight.stdout": "{\"status\": \"PASS\", \"input\": \"/Users/gwh/Documents/ChatGPT/cs/quantum-search/.quantum-world-smoke/experiments/exp-641ade5f07e34921a3ac79b7c6b8137f/input/dqi.kmb\"}\n",
+        "verify.stderr": ""
+      }
+    },
+    {
+      "candidate_id": null,
+      "created_at": "2026-11-06T08:22:04.873720+00:00",
+      "error": null,
+      "finished_at": "2026-11-06T08:23:06.468339+00:00",
+      "id": "exp-97cb9e5f315d454ea605086c66bc1115",
+      "mode": "full",
+      "result": {
+        "diagnostic_cost": 3355599588.3155365,
+        "full": true,
+        "num_qubits": 730,
+        "phase_errors": null,
+        "status": "PASS",
+        "task_cost": 3355599588.3155365,
+        "value_errors": null,
+        "verified_shots": 254464
+      },
+      "salt": "qw-independent-draw-23f51ff33dc44bfcb45fe502ea095af1",
+      "started_at": "2026-11-06T08:22:04.874067+00:00",
+      "status": "succeeded",
+      "task": "dfthcsos",
+      "logs": {
+        "preflight.stdout": "{\"status\": \"PASS\", \"input\": \"/Users/gwh/Documents/ChatGPT/cs/quantum-search/.quantum-world-smoke/experiments/exp-97cb9e5f315d454ea605086c66bc1115/input\"}\n",
+        "verify.stderr": ""
+      }
+    }
+  ],
+  "package_blocked": "NO_IMPROVEMENT"
+}

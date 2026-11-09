@@ -1,0 +1,162 @@
+[
+  {
+    "id": 753660,
+    "title": "  Permission request: reuse of the QuantumAI DQI decoder (jday96314)",
+    "author": "",
+    "date": "2026-10-28 22:08:55.659000",
+    "comments": 3,
+    "votes": 5
+  },
+  {
+    "id": 753654,
+    "title": "Question regarding longest leader prize",
+    "author": "",
+    "date": "2026-10-28 21:46:12.216000",
+    "comments": 0,
+    "votes": 8
+  },
+  {
+    "id": 753642,
+    "title": "The mandatory \"let's rewrite it in Rust\" post: kickmix-engine, DQI verification in a fraction of the time and memory",
+    "author": "",
+    "date": "2026-10-28 21:08:18.064000",
+    "comments": 1,
+    "votes": 2
+  },
+  {
+    "id": 753633,
+    "title": "dfthcsos: why λ_eff can't go much below ~46.8 ",
+    "author": "",
+    "date": "2026-10-28 20:13:42.412000",
+    "comments": 1,
+    "votes": 5
+  },
+  {
+    "id": 753607,
+    "title": "DQI: The baselines RATIO: 60.11134658530358",
+    "author": "",
+    "date": "2026-10-28 18:44:18.535000",
+    "comments": 10,
+    "votes": 10
+  },
+  {
+    "id": 753588,
+    "title": "RezOps Briefing: chemistry moves to 22.70, and the DQI draw sticks to the circuit — 2026-10-28",
+    "author": "",
+    "date": "2026-10-28 17:16:31.565000",
+    "comments": 0,
+    "votes": 1
+  },
+  {
+    "id": 753527,
+    "title": "What is one qubit worth? Marginal value per task (invsqrt 1.6%, DQI 0.23%, chem 0.23%)",
+    "author": "",
+    "date": "2026-10-28 12:50:30.129000",
+    "comments": 0,
+    "votes": 3
+  },
+  {
+    "id": 753451,
+    "title": "invsqrt verifier: skipping x that can't arise in the algorithm?",
+    "author": "",
+    "date": "2026-10-28 05:46:00.478000",
+    "comments": 0,
+    "votes": 3
+  },
+  {
+    "id": 753424,
+    "title": "Reading DQI leaderboard scores: a small salt effect",
+    "author": "",
+    "date": "2026-10-28 03:43:52.022000",
+    "comments": 1,
+    "votes": 4
+  },
+  {
+    "id": 753404,
+    "title": "This competition has gone absolutely wild！",
+    "author": "",
+    "date": "2026-10-28 02:49:55.317000",
+    "comments": 8,
+    "votes": 6
+  },
+  {
+    "id": 753403,
+    "title": "An interactive look inside the invsqrt circuit",
+    "author": "",
+    "date": "2026-10-28 02:43:52.265000",
+    "comments": 4,
+    "votes": 6
+  },
+  {
+    "id": 753316,
+    "title": "Clarification on Apache-2.0 circuit reuse and winner reproducibility",
+    "author": "",
+    "date": "2026-10-27 20:40:54.866000",
+    "comments": 0,
+    "votes": 2
+  },
+  {
+    "id": 753236,
+    "title": "Briefing: the plateau moved to 21, the top is still private — 2026-10-27",
+    "author": "",
+    "date": "2026-10-27 17:07:42.246000",
+    "comments": 2,
+    "votes": 1
+  },
+  {
+    "id": 753230,
+    "title": "Verifying big circuits locally: a kickmix build that uses far less memory (same results)",
+    "author": "",
+    "date": "2026-10-27 16:56:32.047000",
+    "comments": 6,
+    "votes": 2
+  },
+  {
+    "id": 753185,
+    "title": "What didn't work: 30-odd measured nulls across invsqrt, dqi and the chemistry",
+    "author": "",
+    "date": "2026-10-27 12:39:59.276000",
+    "comments": 11,
+    "votes": 5
+  },
+  {
+    "id": 753093,
+    "title": "What happened in scoring？",
+    "author": "",
+    "date": "2026-10-27 05:33:33.249000",
+    "comments": 5,
+    "votes": 1
+  },
+  {
+    "id": 753092,
+    "title": "Clarification on ANGLE_k target-register inputs",
+    "author": "",
+    "date": "2026-10-27 05:30:48.583000",
+    "comments": 6,
+    "votes": 4
+  },
+  {
+    "id": 752949,
+    "title": "There is room for local models too: a one-person setup with a limited AI budget",
+    "author": "",
+    "date": "2026-10-26 19:51:27.663000",
+    "comments": 0,
+    "votes": 6
+  },
+  {
+    "id": 752897,
+    "title": "This is a machine-learning competition, not a quantum-algorithms competition (maybe): where each of the three tasks stands",
+    "author": "",
+    "date": "2026-10-26 17:52:17.707000",
+    "comments": 0,
+    "votes": 3
+  },
+  {
+    "id": 752895,
+    "title": "Briefing: what we know after two days (ish) 2026-OCT-26",
+    "author": "",
+    "date": "2026-10-26 17:45:19.715000",
+    "comments": 6,
+    "votes": 0
+  }
+]

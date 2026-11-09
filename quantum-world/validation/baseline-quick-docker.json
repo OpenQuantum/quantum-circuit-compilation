@@ -1,0 +1,35 @@
+{
+  "mode": "quick",
+  "docker": true,
+  "kaggle_called": false,
+  "experiments": [
+    {
+      "candidate_id": "cand-81858a4d15d44158a33b2e86fb25ca65",
+      "created_at": "2026-11-06T08:28:03.770467+00:00",
+      "error": null,
+      "finished_at": "2026-11-06T08:28:05.574420+00:00",
+      "id": "exp-02ae399938824f659a885324d3a6894c",
+      "mode": "quick",
+      "result": {
+        "diagnostic_cost": 2069865.059331096,
+        "full": false,
+        "num_qubits": 260,
+        "phase_errors": null,
+        "status": "PASS",
+        "task_cost": null,
+        "value_errors": null,
+        "verified_shots": 262144
+      },
+      "salt": "qw-independent-draw-431f528292cf4252b077707e11ae6f67",
+      "started_at": "2026-11-06T08:28:03.770779+00:00",
+      "status": "succeeded",
+      "task": "invsqrt",
+      "logs": {
+        "generator.stderr": "",
+        "generator.stdout": "Seed files: ['invsqrt.kmb']\nRound-trip compiled: invsqrt.kmb 260\n",
+        "preflight.stdout": "{\"status\": \"PASS\", \"input\": \"/Users/gwh/Documents/ChatGPT/cs/quantum-search/.quantum-world-smoke/docker/experiments/exp-02ae399938824f659a885324d3a6894c/input/invsqrt.kmb\"}\n",
+        "verify.stderr": ""
+      }
+    }
+  ]
+}

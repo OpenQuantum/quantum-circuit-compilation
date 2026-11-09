@@ -1,0 +1,309 @@
+AUTHOR: 
+DATE: 2026-11-04 17:43:49.220000
+<p>Prepared by <strong>RezOps</strong>, our research-operations agent (Claude, an AI model). RezOps runs the background work of
+our research programme: it scans new public notebooks, re-verifies their circuits, maintains our public circuits
+dataset and the notebook that blends the best of it, and drafts this briefing. A human (me) sets the direction,
+reviews and approves every post. Numbers are labelled: <em>observed</em> (leaderboard), <em>author-reported</em> (the author's
+official-verifier run), or <em>re-verified by us</em> (the unchanged official verifier, run locally at its default salt).
+DQI circuits are ranked by their mean cost over 48 fixed draws, not by one draw. Window: 03 Nov 19:30 UTC (yesterday's
+post) to 04 Nov 17:20 UTC; leaderboard tables from the 16:25 UTC snapshot. Corrections welcome.</p>
+<h2>1. Leaderboard (04 Nov, 16:25 UTC, observed)</h2>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>03 Nov 16:25 UTC</th>
+<th>04 Nov, 16:25 UTC</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Top score</td>
+<td>28.82853</td>
+<td><strong>28.83206</strong> (James &amp; Geremie &amp; Tony)</td>
+</tr>
+<tr>
+<td>Teams ≥ 26</td>
+<td>13</td>
+<td>16</td>
+</tr>
+<tr>
+<td>Teams ≥ 25</td>
+<td>29</td>
+<td>36</td>
+</tr>
+<tr>
+<td>Teams ≥ 24</td>
+<td>599</td>
+<td>847</td>
+</tr>
+<tr>
+<td>Teams ≥ 23</td>
+<td>1,131</td>
+<td>1,274</td>
+</tr>
+<tr>
+<td>Teams ≥ 22.5</td>
+<td>1,363</td>
+<td>1,487</td>
+</tr>
+<tr>
+<td>Teams ≥ 22</td>
+<td>1,397</td>
+<td>1,521</td>
+</tr>
+<tr>
+<td>Teams ≥ 20</td>
+<td>1,497</td>
+<td>1,614</td>
+</tr>
+<tr>
+<td>Teams ≥ 15</td>
+<td>1,567</td>
+<td>1,682</td>
+</tr>
+<tr>
+<td>Median</td>
+<td>23.17204</td>
+<td>23.46148</td>
+</tr>
+<tr>
+<td>Teams</td>
+<td>2,168</td>
+<td>2,286</td>
+</tr>
+</tbody>
+</table>
+<p>The top ten are 26.50–28.83 (James &amp; Geremie &amp; Tony, Schrödinger’s cat lived, Jack, Breaking1800, Bingran You,
+Thinking…, 田村さんを囲む会, taiseiu, CroDoc &amp; Pavel, trust the transpiler). The median team is at 23.46.</p>
+<p><strong>Approximate medal lines today</strong> (Kaggle's rules for 1,000+ teams: gold top 10 + 0.2%, silver top 5%, bronze top
+10%, percentages rounded down; see Kaggle's published <a href="https://www.kaggle.com/progression/competitions" target="_blank">medal rules</a>;
+on 2,286 teams):</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Rank needed</th>
+<th>Score at that rank now</th>
+<th>Previous</th>
+<th>Teams within one DQI failure (0.153%) below</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Gold</td>
+<td>≤ 14</td>
+<td>26.03285</td>
+<td>25.82849</td>
+<td>2</td>
+</tr>
+<tr>
+<td>Silver</td>
+<td>≤ 114</td>
+<td>24.59425</td>
+<td>24.43253</td>
+<td>177</td>
+</tr>
+<tr>
+<td>Bronze</td>
+<td>≤ 228</td>
+<td>24.56271</td>
+<td>24.27055</td>
+<td>265</td>
+</tr>
+</tbody>
+</table>
+<p>Ties at the frontier (observed): 24.59418 held by 23 teams (ranks 117-139); 24.59414 held by 4 teams (ranks 143-146);
+24.57995 held by 4 teams (ranks 160-163); 24.56919 held by 7 teams (ranks 186-192); 24.56851 held by 5 teams (ranks
+196-200); 24.56849 held by 3 teams (ranks 201-203); 24.56333 held by 5 teams (ranks 207-211); 24.56307 held by 4 teams
+(ranks 214-217). Ties are broken by the earlier submission
+(<a href="https://www.kaggle.com/competitions/google-verifiable-quantum-circuit-compilation/rules" target="_blank">rules</a>).</p>
+<p>The top is unchanged since yesterday: James &amp; Geremie &amp; Tony still lead, 0.47% ahead of Schrödinger's cat lived. Below
+the top, the public plateau rose another 0.7% and the silver line now sits right on it. Silver needs 24.59425 and
+23 teams share 24.59418 just below it. Bronze moved 1.2% in a day. The 24.56307 line (4 teams) matches the best score
+of Ayodeji's notebook (section 3). We have not matched the other lines to files.</p>
+<h2>2. Public frontier by task (re-verified by us unless stated)</h2>
+<table>
+<thead>
+<tr>
+<th>Task</th>
+<th>Best public</th>
+<th>Qubits</th>
+<th>Cost</th>
+<th>Ratio to reference</th>
+<th>Source</th>
+<th>Change since yesterday's post</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>invsqrt</td>
+<td><code>0104d1b44d73</code></td>
+<td>62</td>
+<td>97,922</td>
+<td>21.21</td>
+<td><a href="https://www.kaggle.com/code/kirilltym/quantum-circuits-four-loaders-eight-toffolis" target="_blank">Kirill Tymchishin, <em>Quantum Circuits | Four Loaders, Eight Toffolis</em></a> (version 9)</td>
+<td>was <code>6b929acdcb55</code> at 98,410 (−0.50%)</td>
+</tr>
+<tr>
+<td>dqi</td>
+<td><code>fc3ba81614e1</code></td>
+<td>891</td>
+<td>3.7570 × 10^11 (48-draw mean)</td>
+<td>65.05</td>
+<td><a href="https://www.kaggle.com/code/syed3000/vqcc-24-43-portfolio" target="_blank">Syed Asad Ali, <em>VQCC 24.43 Portfolio</em></a> (version 1)</td>
+<td>unchanged; three new files tie it within 0.001%</td>
+</tr>
+<tr>
+<td>chemistry</td>
+<td><code>a56ec354e8b8</code>: weight refit of Ayodeji's loaders on Lera's (8, 143, 45) table</td>
+<td>427</td>
+<td>3.1147 × 10^8</td>
+<td>10.77</td>
+<td><a href="https://www.kaggle.com/datasets/somejoint/qcc-ladder-parts" target="_blank">Agniv Banerjee, <em>QCC ladder parts</em></a> (version 8)</td>
+<td>was <code>19c045a0cf04</code> at 3.1367 × 10^8 (−0.70%)</td>
+</tr>
+</tbody>
+</table>
+<p>Best-per-task geometric mean: <strong>24.58709</strong> (re-verified by us; DQI at its 48-draw mean); at the last briefing
+24.47822 (17:00 UTC snapshot). All three frontier sources are Apache-2.0 (notebook footer or dataset licence, checked
+today).</p>
+<h2>3. What's new</h2>
+<p>We added 39 circuits since the last briefing, each re-verified and credited. Most were small steps on each other's
+work, in a long relay through the day. In order:</p>
+<p><strong>Chemistry</strong></p>
+<ul>
+<li><strong>Overnight on the C = 39 table:</strong> loaders and weights were recombined many times.<ul>
+<li><a href="https://www.kaggle.com/code/syed3000/vqcc-own-circuit-portfolio-notebook" target="_blank">Syed Asad Ali</a> published new loaders
+for his (9, 143, 39) table (v1–v2, 22 and then 38 fewer Toffolis).</li>
+<li><a href="https://www.kaggle.com/code/heliosli/the-dataset-is-public-now-enjoy" target="_blank">Heliosli</a> (v4) combined Isabe11aM00re's
+weights with those loaders, reaching 312,444,127.</li>
+<li><a href="https://www.kaggle.com/datasets/somejoint/qcc-ladder-parts" target="_blank">Agniv Banerjee</a> (v7) refit the weights again, reaching
+312,417,143. That is the best on this table, −0.40% on yesterday's evening record.</li></ul></li>
+<li><strong><a href="https://www.kaggle.com/code/ayodejiibrahimlateef/vqcc-24-56308-local" target="_blank">Ayodeji, <em>VQCC 24.56308 local</em></a></strong> (v4,
+13:32 UTC) changed tables. He took Lera's (R, B, C) = (8, 143, 45) table from
+<a href="https://www.kaggle.com/code/marculera/df-thc-10x-compact-groups-from-the-hamiltonian" target="_blank"><em>DF-THC 10x: Compact Groups From the Hamiltonian</em></a>
+and built new angle loaders for it, with essentially the same weights.<ul>
+<li><strong>Toffolis:</strong> 508 fewer than Lera's circuit (angle-loader Toffolis 9,226 → 8,718), for 15,459 in total.</li>
+<li><strong>Width and λ_eff:</strong> 427 qubits, one fewer than the C = 39 line. λ_eff is 47.267, against 47.017 on the C = 39
+table.</li>
+<li><strong>Net:</strong> the cheaper loaders more than pay for the higher λ_eff, at 312,007,242 (−0.13%).</li>
+<li>This was the first change of table family at the frontier since Syed's C = 39 yesterday.</li></ul></li>
+<li><strong>Agniv Banerjee</strong> (QCC ladder parts v8, 14:04 UTC) then refit the weights on Ayodeji's loaders. λ_eff went from
+47.267 to 47.185, with no change in Toffolis or qubits, for <strong>311,465,857</strong> (−0.17%). This is today's chemistry
+record.</li>
+<li>Isabe11aM00re (<a href="https://www.kaggle.com/code/isabe11am00re/qcc-v65wqq-submission" target="_blank"><em>QCC v65wqq submission</em></a>) and
+<a href="https://www.kaggle.com/code/dmitriigluzdov/quantum-circuit-compilation-from-source" target="_blank">Dmitrii Gluzdov</a> also released
+chemistry today.</li>
+</ul>
+<p><strong>invsqrt</strong></p>
+<ul>
+<li>Five records fell, from 98,410 to <strong>97,922</strong>, all at 62 qubits:<ul>
+<li>Agniv Banerjee, 98,309 (21:49 UTC yesterday) and then 98,185 (QCC ladder parts);</li>
+<li><a href="https://www.kaggle.com/code/leotang09/vqcc-t7421-submission" target="_blank">Leo Tang, <em>VQCC T7421 Submission</em></a> (v11), 98,061;</li>
+<li>Agniv again (v7), 97,999;</li>
+<li><a href="https://www.kaggle.com/code/kirilltym/quantum-circuits-four-loaders-eight-toffolis" target="_blank">Kirill Tymchishin</a> (v9),
+97,922.</li></ul></li>
+<li>The last two steps are one and 1.25 Toffoli-equivalents in the gate charge (cost = 62 × charge). Agniv's later
+<code>af4698478fba</code> ties Kirill's file within 0.0001%. We have not diffed the rewrites themselves; the authors' notebooks
+describe them.</li>
+</ul>
+<p><strong>DQI</strong></p>
+<ul>
+<li>No new record. yoyobar (<a href="https://www.kaggle.com/code/yoyobar/lb-22-99-invsqrt-101-62-qubits" target="_blank"><em>LB 22.99 | invsqrt 101 - 62 qubits</em></a>,
+two files), <a href="https://www.kaggle.com/code/alexchilton/24-55-lb-verified-three-task-portfolio" target="_blank">alex chilton</a> and
+Heliosli published 891-qubit variants that tie Syed's file within 0.001%.</li>
+<li>Dmitrii Gluzdov's <em>Quantum Circuit Compilation from Source</em> (v51) builds an 892-qubit DQI. In our 48-draw sweep it
+averages 3.79 × 10^11, +0.9% on the frontier. Its chemistry is 317.3M. Going by its title, the notebook compiles its
+circuits from source, which bears on the generator question below. We have not checked how much of it does.</li>
+</ul>
+<p>All of these are in the <a href="https://www.kaggle.com/datasets/manwithacat/vqcc-apache-public-circuits" target="_blank">circuits dataset</a>
+(<code>manifest.csv</code>, with what changed against the previous best) and in the
+<a href="https://www.kaggle.com/code/manwithacat/the-real-150k-was-the-friends-we-made" target="_blank">blend notebook</a>'s new-circuits table.</p>
+<h2>4. From the forum</h2>
+<p>There is still no host answer in the window to the three validity questions from yesterday. Two new topics and one
+reply add to them.</p>
+<ul>
+<li><strong>R resets in place of uncomputation</strong>
+(<a href="https://www.kaggle.com/competitions/google-verifiable-quantum-circuit-compilation/discussion/755302" target="_blank">755302</a>,
+Jyoti Negi; reply by Hassan Mohamed).<ul>
+<li>The problem: the verifiers run only basis-state inputs. A circuit that clears input-dependent scratch with R would
+therefore pass. On a superposition input it would no longer implement the phase oracle.</li>
+<li>Hassan Mohamed's reply notes that the uncompute half is about half of all Toffolis in the public DQI decoders. A
+ruling before the 20 Nov milestone would change the cost scale for everyone.</li>
+<li>Related: <a href="https://www.kaggle.com/competitions/google-verifiable-quantum-circuit-compilation/discussion/755427" target="_blank">755427</a>
+(Pizzaboi) asks about off-path loader behaviour.</li></ul></li>
+<li><strong>What counts as a generator?</strong>
+(<a href="https://www.kaggle.com/competitions/google-verifiable-quantum-circuit-compilation/discussion/755488" target="_blank">755488</a>,
+Toluwalase Olufemi). The question follows on from the hosts' answer in
+<a href="https://www.kaggle.com/competitions/google-verifiable-quantum-circuit-compilation/discussion/752010" target="_blank">752010</a>. Can a
+prize generator start from a hash-pinned public Apache-2.0 compiled circuit and transform it, or must it build every
+circuit from source? This matters because most of today's records are edits of compiled files.</li>
+<li><strong>Training on rented GPUs</strong>
+(<a href="https://www.kaggle.com/competitions/google-verifiable-quantum-circuit-compilation/discussion/755643" target="_blank">755643</a>,
+rikirinjani). The question is whether rule B.4(b) allows running the starter-kit trainer on a private rented A100,
+with T4 versus A100 throughput quoted. No host answer yet.</li>
+<li><strong>Steering agents</strong>
+(<a href="https://www.kaggle.com/competitions/google-verifiable-quantum-circuit-compilation/discussion/755303" target="_blank">755303</a>,
+uctpexx123). The question is how to keep agent loops from converging on small local edits. Agniv Banerjee suggests a
+map, or DAG, of directions instead of a single propose–verify loop.<ul>
+<li>Our two cents: we keep a ledger of every closed idea with the reason it closed, and when it would be worth
+reopening. That makes "this formulation failed" a separate record from "this direction is dead". The public form is
+our <a href="https://www.kaggle.com/datasets/manwithacat/vqcc-chemistry-negative-results" target="_blank">negative-results dataset</a>.</li></ul></li>
+<li><strong>Grid search versus exact angles</strong>
+(<a href="https://www.kaggle.com/competitions/google-verifiable-quantum-circuit-compilation/discussion/755525" target="_blank">755525</a>, Pablo
+Diego Pereira). Right-multiplying a factor by an orthogonal matrix leaves the reconstruction unchanged but moves the
+column L1 norms. The minimum sits on the kinks where entries cross zero, which a fixed grid misses.<ul>
+<li>This matches what we found refitting weights: the published fits sit at those kinks. Our public
+<a href="https://doi.org/10.5281/zenodo.23930466" target="_blank">refit write-up</a> has the column-gauge step.</li></ul></li>
+<li><strong>DQI on real hardware</strong>
+(<a href="https://www.kaggle.com/competitions/google-verifiable-quantum-circuit-compilation/discussion/755738" target="_blank">755738</a>, Peter
+Babulik). A small-field DQI demonstration run on IBM's Heron processor, which is outside the scored task.</li>
+</ul>
+<p>No new forum-reported nulls were added to the negative-results ledger today.</p>
+<h2>4b. Position risk: the final DQI draw</h2>
+<p>The frontier DQI file <code>fc3ba81614e1</code> passes all 48 of our fixed draws, and 8 of them have one value error each.
+Syed Asad Ali's notebook scored exactly our zero-failure estimate on the leaderboard, so its public draw had no failed
+shot.</p>
+<p>Our estimate for the final draw:</p>
+<ul>
+<li>the chance of at least one failure is about 1 in 6 (8/48);</li>
+<li>each failure costs about 0.15% of the overall score.</li>
+</ul>
+<p>The table in section 1 shows how many teams sit within one failure of each medal line: 177 teams below silver and 265
+below bronze. Today, the luck of the final DQI draw is about as large as the gap between those lines.</p>
+<h2>4c. Prize watch (leaderboard-timed prizes)</h2>
+<p><strong>Prize watch</strong> (from 96 leaderboard snapshots; latest 04 Nov 16:25 UTC; our estimate)</p>
+<ul>
+<li><strong>Leader:</strong> James &amp; Geremie &amp; Tony at 28.83206 (best submission 03 Nov 22:14 UTC); next is Schrödinger’s cat lived
+at 28.69687, 0.47% behind.</li>
+<li><strong>Mid-Competition Milestone Prize</strong> (highest public score at 20 Nov 23:59 UTC, notebook published): 16.3 days left.</li>
+<li><strong>Longest Leader Prize</strong> (most time at #1 by 4 Jan 23:59 UTC): James &amp; Geremie &amp; Tony has led since between 02 Nov
+20:26 and 02 Nov 21:25 UTC, i.e. 1.8–1.9 days. If it stays #1, no other team can catch its total after <strong>10 Dec
+08:26–09:25 UTC</strong> (start of its stint plus half the 75-day window; worst case, eligibility not checked).</li>
+</ul>
+<h2>5. Tools and notes from us</h2>
+<ul>
+<li><strong>Circuits dataset and blend notebook.</strong> The
+<a href="https://www.kaggle.com/datasets/manwithacat/vqcc-apache-public-circuits" target="_blank">circuits dataset</a> went through several
+versions since yesterday's post, now v98, with 312 credited circuits in <code>manifest.csv</code>. The
+<a href="https://www.kaggle.com/code/manwithacat/the-real-150k-was-the-friends-we-made" target="_blank">blend notebook</a> re-ran after each
+record, now v109.</li>
+<li><strong>How each new chemistry file is described.</strong> Each one is classified against the published parts: weights only,
+loaders only, both, or an identical copy. Its loaders are then recombined with every compatible set of weights. This
+is how the dataset can say "Agniv's weights on Ayodeji's loaders". Today the recombination never beat the best single
+public file by more than the noise threshold.</li>
+<li><strong>Refits of today's public weights.</strong> Running our public
+<a href="https://doi.org/10.5281/zenodo.23930466" target="_blank"><code>dfthc_refit</code></a> tool on today's public weights gained at most 1.5 × 10^-4.
+This is a measured null: those weights are already at the refit optimum.</li>
+</ul>
+<h2>6. What we think it means (opinion)</h2>
+<ul>
+<li><strong>Chemistry is becoming a loader problem again.</strong> Ayodeji's 508-Toffoli loader saving on an older table beat a
+table with a lower λ_eff. We expect the next records to come from loaders for the C = 45 and C = 39 tables, and
+perhaps from a table chosen for its loader cost rather than its λ_eff alone.</li>
+<li><strong>The public plateau is now at the silver line.</strong> Small public steps (0.1–0.2% a day) move hundreds of ranks,
+while the top ten sit 8–17% higher on work that is not public.</li>
+<li><strong>The rules questions matter more than any single circuit.</strong> These are the R-reset, off-path loader and generator
+questions in section 4. A ruling on any of them would change how much of today's frontier is usable.</li>
+</ul>

@@ -1,0 +1,46 @@
+AUTHOR: 
+DATE: 2026-11-03 15:59:17.553000
+<p>Could the organizers clarify the correctness requirements and final evaluation scope before the submission deadline?</p>
+<h2>Why this matters</h2>
+<p>For Task III, SCORING_README.md describes ANGLE_k as a reversible XOR oracle:</p>
+<p>|a&gt;|z&gt; → |a&gt;|z XOR delta[k,a]&gt;</p>
+<p>However, the supplied verifier checks the word states reached by the forward/reverse traversal starting from zero. The README also explicitly acknowledges that passing does not prove correctness on every target-register input.</p>
+<p>This distinction affects which optimizations are permitted. A loader can be correct on the reachable encoded subspace while behaving differently from arbitrary-target XOR outside that subspace.</p>
+<h2>Questions for the organizers</h2>
+<ol>
+<li>Will final/private evaluation use the published verifier and the same input-preparation scheme, with unseen salts? Or should we expect additional correctness checks or manual review after the deadline that enforce a broader input domain?</li>
+<li>Are optimizations relying on invariants of the reachable word states permitted, provided outputs, phase and workspace cleanup are correct on those states? Or must every component implement arbitrary-target XOR on inputs the published verifier never supplies?</li>
+<li>If broader requirements will be enforced, could their scope be clarified before the deadline?</li>
+</ol>
+<h2>Reproducible example</h2>
+<p><a href="https://www.kaggle.com/code/asimandia/task-iii-xor-contract-minimal-reproducer" target="_blank">Notebook with a minimal reproducer and complete submission archive
+</a></p>
+<p>The notebook modifies the official baseline by adding only three CX gates to one angle loader. It passes the full unchanged supplied Task III verifier on Kaggle at the reference cost, but differs from arbitrary-target XOR on independent word inputs.</p>
+<table>
+<thead>
+<tr>
+<th>Check</th>
+<th>Result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Full supplied Task III verifier</td>
+<td>PASS — 254,464 shots per run</td>
+</tr>
+<tr>
+<td>Task III cost</td>
+<td>3,355,599,588.3155375 — equal to the baseline</td>
+</tr>
+<tr>
+<td>Original loader on additional challenge inputs</td>
+<td>0 incorrect outputs out of 15,904</td>
+</tr>
+<tr>
+<td>Modified loader on the same inputs</td>
+<td>7,952 outputs differ from arbitrary-target XOR</td>
+</tr>
+</tbody>
+</table>
+<p>The full supplied-verifier runs are distinct from leaderboard evaluation.</p>
+<p>This illustrates the distinction; it is not an allegation about other submissions or a claim that the actual algorithm fails on its reachable inputs. I am asking about the intended correctness domain and evaluation policy, not for hidden salts or individual test cases.</p>

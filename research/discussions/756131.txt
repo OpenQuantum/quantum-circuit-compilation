@@ -1,0 +1,13 @@
+AUTHOR: 
+DATE: 2026-11-05 23:19:03.663000
+<p>I believe the public reimplmentations are fine to use/relicense as Apache 2.0. I will make the original repository public under Apache 2.0 if the hosts are concerned.</p>
+<p>I only made the repo private to prevent people from copying me as I commit additional optimizations. I don't intend to get anyone disqualified for my mistake (unintentionally configuring it to be public at first).</p>
+
+AUTHOR: 
+DATE: 2026-11-05 14:18:31.993000
+<p>Hi all, and a question for the hosts in particular,</p>
+<p>Many public DQI circuits trace back to <a href="/jday96314" target="_blank">@jday96314</a>'s continued-fraction decoder(build_raw_cf_destructive.py, from github.com/jday96314/QuantumAI). This includes the 891-qubit line distributed in several Apache-2.0 Kaggle datasets. As far as I can tell, the original repository states no licence and is no longer reachable.
+The rules require winners to license their submission and its source under Apache 2.0 (B5/B7) and to warrant it is their own work and free of third-party rights (C14a). </p>
+<p>Is a submission derived from this lineage eligible for prizes, including the Nov 20 milestone, provided it is fully credited? Or should prize candidates use an independent implementation?</p>
+<p>A clear answer would help everyone near the top, since most leading DQI entries seem to share this ancestry.</p>
+<p>Thanks!</p>

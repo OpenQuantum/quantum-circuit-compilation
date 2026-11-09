@@ -1,0 +1,7 @@
+{
+  "source": "research/candidates/rewritten/invsqrt.kmb",
+  "output": "research/candidates/reuse/invsqrt.kmb",
+  "rewrites": {},
+  "before": "<km.OperationStatistics num_instructions=44783 num_toffoli_like=1423 num_t_like=10>",
+  "after": "<km.OperationStatistics num_instructions=44783 num_toffoli_like=1423 num_t_like=10>"
+}

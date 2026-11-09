@@ -1,0 +1,5 @@
+.venv/
+.quantum-world/
+__pycache__/
+*.egg-info/
+config.toml

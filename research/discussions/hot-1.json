@@ -1,0 +1,162 @@
+[
+  {
+    "id": 753307,
+    "title": "[Update] kickmix is now on PyPI (Windows, Linux, and macOS wheels)",
+    "author": "",
+    "date": "2026-10-27 20:22:33.920000",
+    "comments": 1,
+    "votes": 17
+  },
+  {
+    "id": 750817,
+    "title": "How to get started + Competition's Official Discord",
+    "author": "",
+    "date": "2026-10-19 21:09:01.111000",
+    "comments": 1,
+    "votes": 12
+  },
+  {
+    "id": 754652,
+    "title": "what to learn from this competition",
+    "author": "",
+    "date": "2026-11-01 03:00:38.382000",
+    "comments": 18,
+    "votes": 18
+  },
+  {
+    "id": 755427,
+    "title": "Final evaluation scope: published verifier or additional correctness checks?",
+    "author": "",
+    "date": "2026-11-03 15:59:17.554000",
+    "comments": 0,
+    "votes": 14
+  },
+  {
+    "id": 754805,
+    "title": "The Three Biggest Challenges in Quantum AI comp: My Early Prediction",
+    "author": "",
+    "date": "2026-11-01 18:25:30.852000",
+    "comments": 15,
+    "votes": 5
+  },
+  {
+    "id": 755302,
+    "title": "Is resetting workspace with R allowed in place of uncomputation?",
+    "author": "",
+    "date": "2026-11-03 06:21:59.732000",
+    "comments": 3,
+    "votes": 4
+  },
+  {
+    "id": 754970,
+    "title": "Free introductory guide to FTQC circuit optimization for this competition",
+    "author": "",
+    "date": "2026-11-02 14:04:14.246000",
+    "comments": 1,
+    "votes": 14
+  },
+  {
+    "id": 755996,
+    "title": "    Prize Winner Requirements – Verifiable Quantum Circuit Compilation",
+    "author": "",
+    "date": "2026-11-05 03:08:26.824000",
+    "comments": 0,
+    "votes": 2
+  },
+  {
+    "id": 755814,
+    "title": "RezOps Briefing: chemistry moves to Lera's C = 45 table with new loaders, invsqrt under 98,000 — 2026-11-04",
+    "author": "",
+    "date": "2026-11-04 17:43:49.220000",
+    "comments": 0,
+    "votes": 2
+  },
+  {
+    "id": 756131,
+    "title": "Licence status of jday96314's DQI decoder (QuantumAI repo) for prize-eligible submissions",
+    "author": "",
+    "date": "2026-11-05 14:18:31.993000",
+    "comments": 1,
+    "votes": 0
+  },
+  {
+    "id": 756210,
+    "title": "RezOps Briefing: chemistry falls 2.8% via Atakan Aldemir's pi gauge and Syed Asad Ali's C = 44 table; invsqrt under 97,810",
+    "author": "",
+    "date": "2026-11-05 17:19:43.723000",
+    "comments": 0,
+    "votes": 1
+  },
+  {
+    "id": 755953,
+    "title": "What i do to for...",
+    "author": "",
+    "date": "2026-11-05 00:31:32.257000",
+    "comments": 1,
+    "votes": 1
+  },
+  {
+    "id": 755643,
+    "title": "Rules question: may we train on a rented cloud GPU using the starter kit?",
+    "author": "",
+    "date": "2026-11-04 05:50:25.181000",
+    "comments": 3,
+    "votes": 0
+  },
+  {
+    "id": 755303,
+    "title": "How do you steer agents toward bigger improvements?",
+    "author": "",
+    "date": "2026-11-03 06:41:11.727000",
+    "comments": 3,
+    "votes": 1
+  },
+  {
+    "id": 755972,
+    "title": "Field notes from a crowd-built entry: 8 lessons + 10 closed levers (visual summary)",
+    "author": "",
+    "date": "2026-11-05 01:59:46.360000",
+    "comments": 0,
+    "votes": 0
+  },
+  {
+    "id": 753185,
+    "title": "What didn't work: 30-odd measured nulls across invsqrt, dqi and the chemistry",
+    "author": "",
+    "date": "2026-10-27 12:39:59.276000",
+    "comments": 11,
+    "votes": 5
+  },
+  {
+    "id": 755525,
+    "title": "Grid search vs. exact trigonometry",
+    "author": "",
+    "date": "2026-11-03 21:07:58.289000",
+    "comments": 1,
+    "votes": 0
+  },
+  {
+    "id": 755738,
+    "title": "DQI on real hw ",
+    "author": "",
+    "date": "2026-11-04 13:40:38.031000",
+    "comments": 1,
+    "votes": 1
+  },
+  {
+    "id": 754557,
+    "title": "How do you plan to win this game? ",
+    "author": "",
+    "date": "2026-10-31 14:18:13.822000",
+    "comments": 16,
+    "votes": 4
+  },
+  {
+    "id": 755038,
+    "title": "RezOps Briefing: DQI 1.4% cheaper from exact rewrites and product caching, chemistry weight refits — 2026-11-02",
+    "author": "",
+    "date": "2026-11-02 17:18:09.657000",
+    "comments": 1,
+    "votes": 2
+  }
+]

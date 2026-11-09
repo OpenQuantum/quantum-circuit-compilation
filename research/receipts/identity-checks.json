@@ -1,0 +1,5 @@
+{
+  "rotation_minima_vs_grid": "PASS (40 random instances)",
+  "rewrite_permutation_and_phase": "PASS (50 circuits, every 5-qubit input and 2-bit condition)",
+  "state_comparisons": 6400
+}

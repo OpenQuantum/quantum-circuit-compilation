@@ -1,0 +1,7 @@
+{
+  "source": "research/candidates/rewritten/dfthcsos/angle_k_14.kmb",
+  "output": "research/candidates/reuse/dfthcsos/angle_k_14.kmb",
+  "rewrites": {},
+  "before": "<km.OperationStatistics num_instructions=29310 num_toffoli_like=274 num_t_like=0>",
+  "after": "<km.OperationStatistics num_instructions=29310 num_toffoli_like=274 num_t_like=0>"
+}

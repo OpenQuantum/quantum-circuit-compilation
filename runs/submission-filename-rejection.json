@@ -1,0 +1,5 @@
+{
+  "status": "rejected",
+  "http_status": 400,
+  "response": "{\"error\":{\"code\":400,\"message\":\"Submission not allowed:  Submission files must be named \\u0022submission.zip\\u0022 for this Competition.\",\"status\":\"FAILED_PRECONDITION\"}}"
+}

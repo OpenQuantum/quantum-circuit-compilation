@@ -1,0 +1,58 @@
+{
+  "status": "LOCAL_FULL_PASS",
+  "local_gm": 25.086887305261655,
+  "paired_projection_from_public_best": 25.08688203472144,
+  "paired_conservative_projection": 25.086877034717048,
+  "account_best": {
+    "ref": "58041165",
+    "fileName": "submission.zip",
+    "date": "2026-11-06 01:27:50.167000",
+    "description": "s013: V11a, Syed V4 dqi 1ab3ac53, Syed V4 44-column chem T 14966 lambda 46.8937; official two salts, all-outcome loader check; local GM 25.08687",
+    "status": "SubmissionStatus.COMPLETE",
+    "publicScore": "25.08686",
+    "privateScore": ""
+  },
+  "archive": "/Users/gwh/Documents/ChatGPT/cs/quantum-search/research/artifacts/orthogonal60/submission.zip",
+  "archive_sha256": "818eb7508d4f5d45bc72634c2b411399ffe6ae54e34f281234ff7dd75abcb4ad",
+  "candidate_hashes": {
+    "invsqrt.kmb": "becb308d85b135fa2fbc180a56c0168ee935d65fe8530d9ca1471cb9b5a7d6c6",
+    "dqi.kmb": "1ab3ac53d442d74410cc753d140fb3008057672d2fcde67b563bfef3808339e5",
+    "dfthcsos/submission.npz": "67e3d59f69dcdd2586a89e6756fa986f7b74258f30c20abd1cadeaa4d505dfca",
+    "dfthcsos/angle_k_0.kmb": "49feea26c7ee7d09d8a7210f6efadd66271728c9f6eaee8f07779363263c8b73",
+    "dfthcsos/angle_k_1.kmb": "84784d903d8d56433d60a176d978981fb735798b3a6180c624e0338d7fbac917",
+    "dfthcsos/angle_k_10.kmb": "95df43a823efe2ba5784ebde41f4fdb3f7bdd531c09fd5bb0f1b3996ae81902c",
+    "dfthcsos/angle_k_11.kmb": "c68118a1b895787b2137bbe757ae3d1f1fbf1a0041276dd8ccfe5d2723f87c48",
+    "dfthcsos/angle_k_12.kmb": "78517c70c5e19a82b4e67f8a0e4274d4c13b73ae32270202032da2970917c6be",
+    "dfthcsos/angle_k_13.kmb": "dd1eaefc45b3bbd975bda24e32cae0b2ede4378fc5d4b7dc42169f88b4dd3d94",
+    "dfthcsos/angle_k_14.kmb": "a5ee6a768e5f1fa6df31977f9783381b92a1a5fd14155058bf2ccf8594f5fa89",
+    "dfthcsos/angle_k_2.kmb": "8607f493402ee14b43f5bfbef435d41c00884a54cc21c465b72b5f15a4916272",
+    "dfthcsos/angle_k_3.kmb": "8252d43db6578e6c874d0e26cb946eccd3174831781252f441843f56f74b203d",
+    "dfthcsos/angle_k_4.kmb": "c2551ce5249cf37e6dc0776aed1baaf4ab3e6113247c5446be7db1ef1f9ab811",
+    "dfthcsos/angle_k_5.kmb": "bc60a071172d896a42f260f541ce4c12f522da9245ecb357bc8a85e2a188ccd9",
+    "dfthcsos/angle_k_6.kmb": "0f025ce6ae261b17d8d31e8ad00d65eaa890323de47c2e3e3c5e7f617538bf92",
+    "dfthcsos/angle_k_7.kmb": "85f9517c421a8664eaf465952038d9f902411b4b0d86f65a0123a5aadbd8a74c",
+    "dfthcsos/angle_k_8.kmb": "d4a5c9ddb1b0c4c60cab1728e88e84ccd92f9fb9c18ffe4fd92c6c520d862ffb",
+    "dfthcsos/angle_k_9.kmb": "44583fcea1837e66077175d71a29fd85dcc8ee588367d05180d34311377edade"
+  },
+  "task_costs": {
+    "invsqrt": 96050.04073868778,
+    "dqi": 374771517851.6414,
+    "dfthcsos": 299672313.7873349
+  },
+  "old_chemistry_cost": 299673103.4280183,
+  "reference_costs": {
+    "invsqrt": 2076774.233715282,
+    "dfthcsos": 3355599588.3155375,
+    "dqi": 24439463583672.93
+  },
+  "verification": {
+    "invsqrt_shots": 200540928,
+    "dqi_shots": 102400,
+    "chemistry_shots_per_salt": 78080,
+    "chemistry_salts": 2
+  },
+  "unchanged_tasks": [
+    "invsqrt",
+    "dqi"
+  ]
+}

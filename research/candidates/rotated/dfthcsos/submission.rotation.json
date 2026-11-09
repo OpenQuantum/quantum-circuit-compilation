@@ -1,0 +1,28 @@
+{
+  "source": "research/candidates/public-best/dfthcsos/submission.npz",
+  "passes": [
+    {
+      "pass": 0,
+      "lambda_h2_reduction": 0.00039459111494355437,
+      "accepted_rotations": 134,
+      "seconds": 1.514150874922052
+    },
+    {
+      "pass": 1,
+      "lambda_h2_reduction": 4.843395515430338e-06,
+      "accepted_rotations": 432,
+      "seconds": 2.9930368328932673
+    },
+    {
+      "pass": 2,
+      "lambda_h2_reduction": 0.00014202103440441594,
+      "accepted_rotations": 484,
+      "seconds": 4.483156249858439
+    }
+  ],
+  "invariant_errors": {
+    "W_gram_max_abs": 2.7755575615628914e-16,
+    "W_h_max_abs": 2.220446049250313e-16,
+    "h_norm_max_abs": 1.7763568394002505e-15
+  }
+}

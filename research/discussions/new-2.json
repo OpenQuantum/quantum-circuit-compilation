@@ -1,0 +1,162 @@
+[
+  {
+    "id": 754965,
+    "title": "Scores on each part?",
+    "author": "",
+    "date": "2026-11-02 13:44:42.750000",
+    "comments": 0,
+    "votes": 0
+  },
+  {
+    "id": 754956,
+    "title": "The plateau at 23-24: 949 of 2,018 teams are at 23+, only 153 at 24+ (LB anatomy + open data)",
+    "author": "",
+    "date": "2026-11-02 12:55:32.745000",
+    "comments": 1,
+    "votes": -2
+  },
+  {
+    "id": 754914,
+    "title": "What is next?",
+    "author": "",
+    "date": "2026-11-02 09:41:05.193000",
+    "comments": 2,
+    "votes": -4
+  },
+  {
+    "id": 754815,
+    "title": "SymQ: checking circuit rewrites, ancillas and measurement corrections — feedback welcome",
+    "author": "",
+    "date": "2026-11-01 20:32:38.519000",
+    "comments": 0,
+    "votes": 0
+  },
+  {
+    "id": 754805,
+    "title": "The Three Biggest Challenges in Quantum AI comp: My Early Prediction",
+    "author": "",
+    "date": "2026-11-01 18:25:30.852000",
+    "comments": 15,
+    "votes": 5
+  },
+  {
+    "id": 754793,
+    "title": "RezOps Briefing: DQI at 892 qubits three times over, a parts-assembled chemistry record, and a chemistry primer — 2026-11-01",
+    "author": "",
+    "date": "2026-11-01 17:28:28.337000",
+    "comments": 0,
+    "votes": 2
+  },
+  {
+    "id": 754751,
+    "title": "GPU Resources?",
+    "author": "",
+    "date": "2026-11-01 14:22:42.969000",
+    "comments": 1,
+    "votes": 0
+  },
+  {
+    "id": 754696,
+    "title": "End-to-End Quantum Circuit Workflow: From .kmb Files to Automated Optimization & Verification",
+    "author": "",
+    "date": "2026-11-01 09:46:25.699000",
+    "comments": 0,
+    "votes": 0
+  },
+  {
+    "id": 754652,
+    "title": "what to learn from this competition",
+    "author": "",
+    "date": "2026-11-01 03:00:38.382000",
+    "comments": 18,
+    "votes": 18
+  },
+  {
+    "id": 754605,
+    "title": "RezOps Briefing: a new chemistry family from compact groups, a 900-qubit DQI, and the public blend at 23.505 — 2026-10-31",
+    "author": "",
+    "date": "2026-10-31 18:28:33.533000",
+    "comments": 2,
+    "votes": 0
+  },
+  {
+    "id": 754557,
+    "title": "How do you plan to win this game? ",
+    "author": "",
+    "date": "2026-10-31 14:18:13.822000",
+    "comments": 16,
+    "votes": 4
+  },
+  {
+    "id": 754466,
+    "title": "ML method: Quantum Circuit Optimization with AlphaTensor",
+    "author": "",
+    "date": "2026-10-31 07:18:17.488000",
+    "comments": 2,
+    "votes": 3
+  },
+  {
+    "id": 754174,
+    "title": "RezOps Briefing: inverse square root drops to 62 qubits (yoyobar), the DQI failures get fixed, and the public blend reaches 23.135 — 2026-10-30",
+    "author": "",
+    "date": "2026-10-30 17:12:03.300000",
+    "comments": 0,
+    "votes": 0
+  },
+  {
+    "id": 754152,
+    "title": "63 → 62 on inverse square root: congratulations to yoyobar and Ahmed Berat Özer (and our notes on why it was hard)",
+    "author": "",
+    "date": "2026-10-30 15:28:07.830000",
+    "comments": 5,
+    "votes": 1
+  },
+  {
+    "id": 754089,
+    "title": "How Are You Using AI Agents for This Competition? Do You Have a Quantum Computing Background?",
+    "author": "",
+    "date": "2026-10-30 06:34:22.305000",
+    "comments": 13,
+    "votes": 4
+  },
+  {
+    "id": 753923,
+    "title": "RezOps Briefing: chemistry becomes a parts market, hengck23's 889-qubit DQI takes the lead, plateau at 22.87 — 2026-10-29",
+    "author": "",
+    "date": "2026-10-29 19:56:19.371000",
+    "comments": 1,
+    "votes": 2
+  },
+  {
+    "id": 753741,
+    "title": "Some early thoughts on setting up a two stage search loop for kickmix",
+    "author": "",
+    "date": "2026-10-29 06:28:30.391000",
+    "comments": 0,
+    "votes": 2
+  },
+  {
+    "id": 753740,
+    "title": "Licence question: DQI circuits derived from jday96314/QuantumAI",
+    "author": "",
+    "date": "2026-10-29 06:21:09.626000",
+    "comments": 2,
+    "votes": 4
+  },
+  {
+    "id": 753738,
+    "title": "Beyond the Plateau",
+    "author": "",
+    "date": "2026-10-29 06:03:35.024000",
+    "comments": 10,
+    "votes": 3
+  },
+  {
+    "id": 753687,
+    "title": "Looking for teammates (solo, CPU-only): offering dfthcsos compile-and-verify tooling, seeking optimization/chemistry skills",
+    "author": "",
+    "date": "2026-10-29 01:17:46.127000",
+    "comments": 1,
+    "votes": 3
+  }
+]

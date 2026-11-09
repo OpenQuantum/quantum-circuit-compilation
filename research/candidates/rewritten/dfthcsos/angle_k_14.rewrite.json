@@ -1,0 +1,9 @@
+{
+  "source": "research/candidates/incumbent/dfthcsos/angle_k_14.kmb",
+  "output": "research/candidates/rewritten/dfthcsos/angle_k_14.kmb",
+  "rewrites": {
+    "cancel_CX": 3918
+  },
+  "before": "<km.OperationStatistics num_instructions=37146 num_toffoli_like=274 num_t_like=0>",
+  "after": "<km.OperationStatistics num_instructions=29310 num_toffoli_like=274 num_t_like=0>"
+}

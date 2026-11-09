@@ -1,0 +1,12 @@
+.venv/
+downloads/
+official/data/
+artifacts/
+__pycache__/
+*.so
+.env
+kaggle.json
+access_token
+.quantum-world*/
+# Large DQI circuit artifacts are restored locally; keep source and manifests in Git.
+/research/candidates/**/dqi.kmb

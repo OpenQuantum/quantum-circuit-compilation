@@ -1,0 +1,19 @@
+# Copy to config.toml. Relative paths resolve against this file.
+project_root = ".."
+data_root = "../.quantum-world"
+worker_python = "../.venv/bin/python"
+# Existing optimized portfolio; use ../official/data/sample_submission for baseline work.
+seed_path = "../research/candidates/rotated50"
+max_workers = 2
+job_timeout = 3600
+generator_timeout = 300
+generator_image = "quantum-world-generator:local"
+current_best = 25.08686
+
+[hub]
+url = "ws://127.0.0.1:8000"
+world_id = "quantum-world-local"
+# Each agent can access only its own candidates/jobs; userId is injected by Runtime.
+[hub.allowed_agents]
+quantum-agent-local = ["local-user"]
+# Hub credentials are read from HUB_CLIENT_TOKEN, not this file.

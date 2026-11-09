@@ -1,0 +1,23 @@
+{
+  "scope": "official baseline, local full defaults with empty salt",
+  "tasks": {
+    "invsqrt": {
+      "status": "PASS",
+      "score": 2076774.233715282,
+      "verified_shots": 200540928,
+      "num_qubits": 260
+    },
+    "dqi": {
+      "status": "PASS",
+      "score": 24439463583672.93,
+      "verified_shots": 102400,
+      "num_qubits": 1893
+    },
+    "dfthcsos": {
+      "status": "PASS",
+      "score": 3355599588.3155365,
+      "verified_shots": 254464,
+      "num_qubits": 730
+    }
+  }
+}

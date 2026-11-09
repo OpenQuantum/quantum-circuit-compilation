@@ -1,0 +1,23 @@
+{
+  "id": "syed3000/vqcc-own-circuit-portfolio-notebook",
+  "id_no": 142597619,
+  "title": "VQCC Own-Circuit Portfolio Notebook",
+  "code_file": "vqcc-own-circuit-portfolio-notebook.ipynb",
+  "language": "python",
+  "kernel_type": "notebook",
+  "is_private": false,
+  "enable_gpu": false,
+  "enable_tpu": false,
+  "enable_internet": false,
+  "keywords": [],
+  "dataset_sources": [
+    "syed3000/vqcc-own-circuit-portfolio"
+  ],
+  "kernel_sources": [],
+  "competition_sources": [
+    "google-verifiable-quantum-circuit-compilation"
+  ],
+  "model_sources": [],
+  "docker_image": "gcr.io/kaggle-images/python@sha256:0717e81990be591f8c5f98f033d29ab23e9ffde057e5b3a6bd4371f93969e962",
+  "machine_shape": "None"
+}

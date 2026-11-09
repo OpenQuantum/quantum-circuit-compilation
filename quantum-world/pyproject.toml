@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "quantum-world"
+version = "0.1.0"
+description = "Local, durable quantum-circuit experiment World for Star Agent Runtime"
+requires-python = ">=3.13"
+dependencies = ["star-protocol", "jsonschema==4.26.0"]
+
+[project.scripts]
+quantum-world = "quantum_world.cli:main"
+
+[tool.uv.sources]
+star-protocol = { git = "https://github.com/OpenQuantum/star-hub.git", subdirectory = "vendor/star-protocol", rev = "c237172f788412a93a3647129572b546ca949603" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
