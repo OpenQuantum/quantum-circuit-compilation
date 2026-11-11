@@ -5,7 +5,7 @@
 ## 准备现有服务与官方数据
 
 - 使用 Git、uv、Python 3.13 和 Docker Desktop 的 Linux 容器。Windows 使用下方 PowerShell 命令。macOS 可使用后面的 shell 命令。
-- 准备已有 Star Hub 与 Agent Runtime 的配置和凭据。Runtime 要开启 Human 和 World 工具，配好模型，并使用与初始化命令一致的 World ID、Agent ID、Human ID 和用户 ID。接口字段见[外部 Agent 接口](agent-interface.md)。
+- 准备已有 Star Hub 与 Agent Runtime 的配置和凭据。Windows 验收复用了本地 Hub 和 Agent Runtime `53013476667e0627ba99bba772e2ee84aa771486`，模型为 `deepseek/deepseek-flash`。接口字段见[外部 Agent 接口](agent-interface.md)。
 - 安装 BFF 需要读取 `quantum-bff/uv.lock` 中固定提交的团队 Git 仓库。准备已有 Star Hub 源码以导出固定版本的 Star Protocol SDK。
 - 下载 [Kaggle 比赛数据](https://www.kaggle.com/competitions/google-verifiable-quantum-circuit-compilation/data)，将解压后的 `verifiers/` 和 `sample_submission/` 等目录放在同一个官方数据目录。文件路径与 SHA256 见 [official-manifest.json](../runs/official-manifest.json)。World 运行时只读挂载该目录和本仓库的 `official/metric/`。
 
@@ -17,7 +17,7 @@
 uv sync --project quantum-bff --locked --python 3.13
 uv run --project quantum-bff --no-sync python scripts/console.py --state-dir .local-console init --hub-url ws://127.0.0.1:28080 --world-hub-url ws://hub:8000
 
-$hubRepo = 'E:\ZKLS\repos\star-hub'
+$hubRepo = '..\star-hub'
 $sdkRevision = 'c237172f788412a93a3647129572b546ca949603'
 $state = (Resolve-Path -LiteralPath '.local-console').Path
 git -C $hubRepo archive --format=zip --output="$state/star-sdk.zip" $sdkRevision vendor/star-protocol
@@ -41,7 +41,7 @@ docker build --build-context "star_sdk=$state/sdk/vendor/star-protocol" -f quant
 
 ## 启动 World 与网页
 
-先启动已有 Hub。将该 Hub 的客户端凭据设置为当前终端的 `HUB_CLIENT_TOKEN`。World 和 BFF 分别从进程环境取凭据。选择一个未被使用的 World ID，或先停掉占用同一 ID 的 World。
+先启动已有 Hub。将该 Hub 的客户端凭据设置为当前终端的 `HUB_CLIENT_TOKEN`。World、Agent Runtime 和 BFF 都从进程环境取凭据。macOS 终端需执行 `export HUB_CLIENT_TOKEN`，子进程才能读取该变量。选择一个未被使用的 World ID，或先停掉占用同一 ID 的 World。示例中的 `ws://hub:8000` 要求 World 与 Hub 在同一 Docker 网络，且 Hub 在该网络上的别名为 `hub`。
 
 Windows PowerShell 示例。将 `$officialData` 和 `$hubNetwork` 替换成实际路径和网络名。
 
@@ -77,7 +77,26 @@ docker run -d --name quantum-world-console --network "$hub_network" \
   --env HUB_CLIENT_TOKEN --env QUANTUM_OPERATOR_TOKEN quantum-world-console:local
 ```
 
-启动或确认已有 Runtime 已加入 World，再运行以下命令启动本机 BFF。
+在已有 Agent Runtime 的本机配置里合并下面的配置。保留当前模型、凭据与存储配置。自定义了控制台身份或 Hub 地址时，同步修改对应字段。
+
+```toml
+[hub]
+url = "ws://127.0.0.1:28080"
+agent_id = "quantum-agent-local"
+world_id = "quantum-world-local"
+
+[human]
+enabled = true
+human_client_id = "human-bff.quantum.local"
+allowed_user_id = "local-user"
+dialogue_mode = "standard"
+execution_backend = "generator"
+
+[world_tools]
+enabled = true
+```
+
+在已安装依赖的 Runtime 仓库根目录运行 `uv run --no-sync python -m agent_runtime serve --config /path/to/runtime.toml`，配置路径替换为本机路径。确认 Runtime 加入 World 后，在本仓库根目录启动 BFF。
 
 ```text
 uv run --project quantum-bff --no-sync python scripts/console.py --state-dir .local-console serve-bff
@@ -86,6 +105,8 @@ uv run --project quantum-bff --no-sync python scripts/console.py --state-dir .lo
 打开 `http://127.0.0.1:8320/`，用 `local-user` 和 `.local-console/login-code` 中的口令登录。比赛面板以只读方式启动。实验状态和日志从 World 读取。
 
 ## 从空实验库验收
+
+本页的镜像和启动步骤已在 Windows + Docker Desktop 上完成 `invsqrt` quick 验收。Apple Silicon 可用 Docker Desktop 默认的 ARM64 构建，验收以本机运行结果为准。
 
 1. 从网页请 Agent 调用 `GetTask(task="invsqrt")`。
 2. 从网页请 Agent 调用一次 `RunExperiment(task="invsqrt", mode="quick")`，省略 `candidate_id`，使用官方样例。记下回执里的实验 ID。
@@ -106,3 +127,11 @@ node scripts/tests/console_live_e2e.mjs --playwright "$PWD/.local-console/test-t
 ```
 
 重跑同一验收时使用同一个状态文件。脚本会接续已保存的 quick 请求。为一轮全新验收指定新的 `--state-file`，并使用新的 World 数据卷。
+
+## 运行回归测试
+
+前端运行 `npm --prefix frontend test`。启动配置运行 `python -m unittest discover -s scripts/tests -v`。BFF 测试会加载真实 World 实例，需在 Linux 容器或其他提供 `fcntl` 的环境中运行。
+
+```sh
+uv run --project quantum-bff --locked --extra test python -m pytest -q quantum-bff/tests
+```
