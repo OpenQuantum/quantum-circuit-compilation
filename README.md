@@ -2,6 +2,8 @@
 
 本地 agent 交互环境已实现，入口见 [Quantum World](quantum-world/README.md)。新提交必须先由人工审批具体文件哈希，agent 不具备审批或上传工具。下面保留官方基线的历史复现记录；后续优化见 [research/README.md](research/README.md)。
 
+比赛控制台的 BFF 和前端随本仓库分发。复用已有 Star Hub 与 Agent Runtime，按[控制台部署和验收说明](docs/console.md)从源码启动 World，使用网页发起实验并查看验证日志。
+
 本目录已跑通官方基线的打包、完整验证和 Kaggle 提交，并完成后续公开方案优化和本地 Quantum World 实现。当前采用本地部署，未部署服务器。下文的基线分数、回执与复现命令均为历史基线记录，不代表当前账号最高分。
 
 ## 代码结构

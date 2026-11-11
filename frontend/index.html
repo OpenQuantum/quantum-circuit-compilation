@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#122d39">
+  <meta name="description" content="Quantum World 本地比赛控制台：与 Agent 协作，跟踪电路实验，审核 Kaggle 提交。">
+  <title>Quantum Console · 电路实验工作台</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='10' fill='%23122d39'/%3E%3Ctext x='8' y='29' font-size='29' fill='%2365d6bf'%3EQ%3C/text%3E%3C/svg%3E">
+  <link rel="stylesheet" href="/console/style.css">
+  <script type="module" src="/console/app.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/" aria-label="Quantum Console 首页"><span class="brand-mark">Q<span>·</span></span><span>QUANTUM <strong>CONSOLE</strong></span></a>
+    <span class="topbar-caption">Google Verifiable Quantum Circuit Compilation</span>
+    <div class="account"><span class="local-tag">LOCAL WORKSPACE</span><span id="account-name"></span><button id="logout" class="topbar-button" hidden>退出</button></div>
+  </header>
+
+  <main id="login-view" class="login-view">
+    <div class="login-intro"><span class="eyebrow">QUANTUM WORLD / 实验控制台</span><h1>把每一次探索，<br>变成可验证的进步。</h1><p>与自研 Agent 协作，追踪候选电路和验证结果，<br>在提交前完成你的人工审核。</p><div class="circuit" aria-hidden="true"><span>q₀ ─── H ────●─────────</span><span>q₁ ──────────⊕── Rz ───</span><span>q₂ ─── Ry ─────────────</span></div></div>
+    <section class="login-card" aria-labelledby="login-title"><span class="section-kicker">进入工作空间</span><h2 id="login-title">连接你的实验</h2><p class="muted">使用当前 BFF 的账号登录。</p><form id="login-form" hidden><label for="login-user">用户 ID</label><input id="login-user" name="username" autocomplete="username" value="local-user" required maxlength="160"><div id="access-code-field" hidden><label for="access-code">访问口令</label><input id="access-code" name="password" type="password" autocomplete="current-password" maxlength="512"></div><button type="submit" class="primary full">登录工作空间 <span aria-hidden="true">→</span></button></form><a id="oidc-login" class="button primary full" href="/api/human/v1/auth/login" hidden>通过统一账号登录 →</a><p id="login-message" role="status" class="muted">正在连接服务…</p><button id="retry-init" class="text-button" hidden>重新连接</button></section>
+  </main>
+
+  <div id="workspace" class="workspace" hidden>
+    <aside class="sidebar"><div class="workspace-label">工作空间<span id="world-name">Quantum World</span></div><nav aria-label="比赛工作台"><button class="nav-item active" data-view="experiments"><span aria-hidden="true">◉</span> 实验记录</button><button class="nav-item" data-view="candidates"><span aria-hidden="true">⌘</span> 候选电路</button><button class="nav-item" data-view="packages"><span aria-hidden="true">▣</span> 提交审核 <span id="approval-count" class="nav-count" hidden></span></button></nav><div class="sidebar-note"><span class="small-dot"></span> 人工审核已启用<p>每个提交包均需确认，<br>再由你发起 Kaggle 提交。</p></div><a class="competition-link" href="https://www.kaggle.com/competitions/google-verifiable-quantum-circuit-compilation" target="_blank" rel="noopener noreferrer">查看 Kaggle 比赛 ↗</a></aside>
+    <div class="work-area"><section class="main-column"><div class="page-heading"><div><div class="eyebrow">QUANTUM CIRCUIT LAB</div><h1 id="page-title">实验记录</h1><p id="page-description">从候选电路到独立验证，跟踪每一步结果。</p></div><button id="refresh" class="button secondary"><span aria-hidden="true">↻</span> 刷新</button></div><div id="notice" class="notice" role="status" hidden></div><div id="world-error" class="notice error" role="alert" hidden></div><div class="metrics" id="metrics" aria-label="比赛概况"></div><div class="list-toolbar"><div><h2 id="list-title">全部实验</h2><span class="muted" id="record-count">等待数据</span></div><div class="toolbar-controls"><label class="sr-only" for="task-filter">筛选任务</label><select id="task-filter"><option value="all">全部任务</option><option value="invsqrt">Inverse Square Root</option><option value="dqi">DQI</option><option value="dfthcsos">DF-THC SOS</option></select><span id="refresh-status" class="sync-status">等待连接</span></div></div><div class="record-panel" id="records"></div><section id="detail" class="detail-panel" hidden aria-label="记录详情"></section><p class="footnote">本地得分为估算值。Kaggle 最终成绩以官方验证为准。</p></section>
+      <aside class="chat-panel" aria-labelledby="chat-title"><div class="chat-heading"><div class="agent-avatar" aria-hidden="true">✦</div><div><h2 id="chat-title">Agent 协作</h2><p id="chat-connection">连接你的自研 Agent</p></div><button id="new-chat" class="icon-button" aria-label="新建对话" title="新建对话">＋</button></div><div id="demo-label" class="demo-label" hidden>演示通信模式 · 回复不代表真实实验执行</div><div class="chat-selectors"><label for="agent-select">执行 Agent</label><select id="agent-select"><option value="">自动选择</option></select><label for="conversation-select">对话记录</label><select id="conversation-select"><option value="">新对话</option></select><button id="more-conversations" class="text-button" hidden>加载更多对话</button></div><div id="chat-messages" class="chat-messages" role="log" aria-label="对话消息"></div><div id="chat-state" class="chat-state" aria-live="polite"></div><div id="chat-error" class="chat-error" role="alert" hidden></div><form id="chat-form" class="chat-composer"><label class="sr-only" for="chat-input">给 Agent 的指令</label><textarea id="chat-input" placeholder="描述优化目标，或让 Agent 分析实验结果…" rows="3" maxlength="12000" required></textarea><div class="composer-footer"><span>Enter 发送 · Shift + Enter 换行</span><button id="send-chat" class="primary" type="submit">发送 ↑</button></div></form><p class="chat-footnote">Agent 执行与实验验证分别跟踪。提交审核由你完成。</p></aside>
+    </div>
+  </div>
+
+  <dialog id="approval-dialog" aria-labelledby="approval-title"><form method="dialog"><button class="dialog-close icon-button" aria-label="关闭审核窗口">×</button></form><span class="section-kicker">HUMAN REVIEW</span><h2 id="approval-title">审核提交包</h2><div id="approval-content"></div><label class="confirmation"><input id="approval-confirm" type="checkbox"><span>我已检查该提交包的得分、验证结果及 SHA-256，同意批准此包。</span></label><p id="approval-error" class="error-text" role="alert" hidden></p><div class="dialog-actions"><button id="close-approval" class="button secondary">暂不批准</button><button id="confirm-approval" class="primary" disabled>批准此提交包</button></div><p class="muted small">批准后还需单独点击「提交到 Kaggle」。更换文件需要重新审批。</p></dialog>
+  <dialog id="submit-dialog" aria-labelledby="submit-title"><form method="dialog"><button class="dialog-close icon-button" aria-label="关闭提交窗口">×</button></form><span class="section-kicker">KAGGLE SUBMISSION</span><h2 id="submit-title">提交已批准的包</h2><p>这一步会实际上传到 Kaggle。系统会复核文件哈希、审批有效期及当前最高分。</p><code id="submit-sha" class="hash-block"></code><p id="submit-error" class="error-text" role="alert" hidden></p><div class="dialog-actions"><button id="close-submit" class="button secondary">取消</button><button id="confirm-submit" class="primary">确认提交到 Kaggle</button></div></dialog>
+  <noscript>请启用 JavaScript，以登录、查询实验和审核提交包。</noscript>
+</body>
+</html>
