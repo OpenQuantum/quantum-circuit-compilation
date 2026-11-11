@@ -1,0 +1,9 @@
+**
+!pyproject.toml
+!src/
+!src/**
+!validation/
+!validation/requirements-worker.txt
+**/__pycache__/
+**/*.pyc
+**/.env*

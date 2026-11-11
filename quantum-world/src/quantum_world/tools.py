@@ -65,7 +65,11 @@ DEFINITIONS = [
     },
     {
         "name": "BuildSubmission",
-        "description": "Build a package from three successful full experiments. Returns awaiting_approval; NEVER uploads to Kaggle.",
+        "description": (
+            "Build a package from exactly one successful full verification for each benchmark "
+            "(invsqrt, dqi, and dfthcsos). Provide one experiment ID per benchmark. "
+            "Returns awaiting_approval. Kaggle upload requires separate human approval and submission."
+        ),
         "parameters": schema(
             {
                 "experiments": {

@@ -1,0 +1,33 @@
+[build-system]
+requires = ["hatchling>=1.26"]
+build-backend = "hatchling.build"
+
+[project]
+name = "quantum-competition-bff"
+version = "0.1.0"
+description = "Quantum competition console and operator adapter for Star Human BFF"
+requires-python = ">=3.13"
+dependencies = [
+    "star-bff-for-human",
+    "star-protocol",
+    "tzdata==2025.2; sys_platform == 'win32'",
+]
+
+[project.optional-dependencies]
+test = ["pytest>=8,<10", "pytest-asyncio>=0.25,<2", "quantum-world[http]"]
+
+[project.scripts]
+quantum-bff = "quantum_bff.cli:main"
+
+[tool.uv.sources]
+quantum-world = { path = "../quantum-world", editable = true }
+star-bff-for-human = { git = "https://github.com/OpenQuantum/star-agent-bff.git", rev = "16494e09dab558ae4f4e2acb6ca2011d13e8f1b8" }
+star-protocol = { git = "https://github.com/OpenQuantum/star-hub.git", subdirectory = "vendor/star-protocol", rev = "c237172f788412a93a3647129572b546ca949603" }
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/quantum_bff"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"

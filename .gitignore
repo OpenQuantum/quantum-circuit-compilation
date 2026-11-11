@@ -8,5 +8,7 @@ __pycache__/
 kaggle.json
 access_token
 .quantum-world*/
+.local-console/
+.quantum-console/
 # Large DQI circuit artifacts are restored locally; keep source and manifests in Git.
 /research/candidates/**/dqi.kmb

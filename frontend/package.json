@@ -1,0 +1,10 @@
+{
+  "name": "quantum-console",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "check": "node --check app.js && node --check model.js",
+    "test": "node --test tests/*.test.js"
+  }
+}

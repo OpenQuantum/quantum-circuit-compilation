@@ -43,6 +43,16 @@ class ProtocolContractTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(envelope.payload.content['tools'], DEFINITIONS)
         self.assertNotIn('SubmitSubmission', {d['name'] for d in envelope.payload.content['tools']})
 
+    async def test_build_submission_advertises_one_successful_full_per_benchmark(self):
+        self.endpoint.send = AsyncMock()
+        await self.endpoint.send_specification('external-agent')
+        tools = self.endpoint.send.call_args.args[0].payload.content['tools']
+        description = next(tool['description'] for tool in tools if tool['name'] == 'BuildSubmission')
+        self.assertRegex(description, r'(?i)\bexactly one\b[^.]*\b(?:successful|passed)\b[^.]*\bfull\b[^.]*\b(?:each|per)\b')
+        for task in ('invsqrt', 'dqi', 'dfthcsos'):
+            with self.subTest(task=task):
+                self.assertRegex(description, rf'\b{task}\b')
+
     async def test_external_action_and_terminal_replay(self):
         action = {'id': 'read-task', 'name': 'GetTask', 'params': {'userId': 'user', 'task': 'invsqrt'}}
         first, data = await self.invoke(action)

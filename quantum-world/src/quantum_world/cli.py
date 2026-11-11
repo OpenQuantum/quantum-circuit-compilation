@@ -26,38 +26,71 @@ async def run(args):
     )
     try:
         if args.command == "serve":
-            from .protocol import QuantumEnvironment
-
-            token = (
-                getpass.getpass("Hub token: ")
-                if args.prompt_token
-                else os.environ.get("HUB_CLIENT_TOKEN")
-            )
-            if not token:
-                raise WorldError(
-                    "TOKEN_REQUIRED", "Set HUB_CLIENT_TOKEN or use --prompt-token"
-                )
-            endpoint = QuantumEnvironment(world)
+            endpoint = None
+            server = None
+            server_task = None
+            stop_task = None
             stopped = asyncio.Event()
             loop = asyncio.get_running_loop()
             for sig in (signal.SIGINT, signal.SIGTERM):
                 loop.add_signal_handler(sig, stopped.set)
             try:
-                async with asyncio.timeout(20):
-                    await endpoint.connect(
-                        settings.hub_url, headers={"Authorization": "Bearer " + token}
+                if args.operator_http or args.http_only:
+                    try:
+                        import uvicorn
+                        from .operator_api import create_operator_app
+                    except ImportError:
+                        raise WorldError(
+                            "HTTP_DEPENDENCIES_REQUIRED", "Install quantum-world[http] to enable the operator API"
+                        ) from None
+                    app = create_operator_app(world)
+                    server = uvicorn.Server(uvicorn.Config(
+                        app, host=args.http_host, port=args.http_port, log_level="info",
+                        timeout_graceful_shutdown=10,
+                    ))
+                if not args.http_only:
+                    from .protocol import QuantumEnvironment
+                    token = (
+                        getpass.getpass("Hub token: ")
+                        if args.prompt_token
+                        else os.environ.get("HUB_CLIENT_TOKEN")
                     )
-                    await endpoint.start()
+                    if not token:
+                        raise WorldError(
+                            "TOKEN_REQUIRED", "Set HUB_CLIENT_TOKEN or use --prompt-token"
+                        )
+                    endpoint = QuantumEnvironment(world)
+                    async with asyncio.timeout(20):
+                        await endpoint.connect(
+                            settings.hub_url, headers={"Authorization": "Bearer " + token}
+                        )
+                        await endpoint.start()
+                if server:
+                    server_task = asyncio.create_task(server.serve())
                 show(
                     {
                         "world_id": settings.world_id,
-                        "status": "connected",
+                        "status": "http_only" if args.http_only else "connected",
                         "approval_required": True,
+                        "operator_http": bool(server),
+                        "operator_address": f"http://{args.http_host}:{args.http_port}" if server else None,
                     }
                 )
-                await stopped.wait()
+                stop_task = asyncio.create_task(stopped.wait())
+                watched = [stop_task] + ([server_task] if server_task else [])
+                await asyncio.wait(watched, return_when=asyncio.FIRST_COMPLETED)
+                if server_task and server_task.done():
+                    await server_task
             finally:
-                await endpoint.stop()
+                if stop_task:
+                    stop_task.cancel()
+                    await asyncio.gather(stop_task, return_exceptions=True)
+                if server:
+                    server.should_exit = True
+                if server_task:
+                    await asyncio.gather(server_task, return_exceptions=True)
+                if endpoint:
+                    await endpoint.stop()
         elif args.command == "call":
             params = json.loads(args.params)
             params["userId"] = args.user
@@ -126,6 +159,10 @@ def main():
     commands = parser.add_subparsers(dest="command", required=True)
     serve = commands.add_parser("serve")
     serve.add_argument("--prompt-token", action="store_true")
+    serve.add_argument("--operator-http", action="store_true", help="Serve the authenticated operator API alongside Hub")
+    serve.add_argument("--http-only", action="store_true", help="Serve only the operator API, without a Hub connection")
+    serve.add_argument("--http-host", default="127.0.0.1")
+    serve.add_argument("--http-port", type=int, default=8321)
     call = commands.add_parser(
         "call", help="Offline operator test; RunExperiment waits for completion"
     )
