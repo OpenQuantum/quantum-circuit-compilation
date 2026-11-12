@@ -65,6 +65,8 @@ World 固定 SDK 为 star-hub `c237172f788412a93a3647129572b546ca949603`，这�
 | 工具 | 关键参数 | 返回/用途 |
 |---|---|---|
 | GetTask | task | 约束、参考成本、门槛 |
+| SearchResearchMethods | task，query/limit 可选 | 检索研究工作台公开方法、来源和报告分数 |
+| GetResearchNode | task、node_id | 读取公开节点摘要和已有详解 |
 | CreateCandidate | task, files, entrypoint | 不可变 candidate_id |
 | RunExperiment | task, mode, candidate_id 可省略 | 立即返回 experiment_id；省略候选即测试 seed |
 | GetExperiment | experiment_id | 排队/运行/成功/失败、成本、有限日志 |
@@ -72,6 +74,8 @@ World 固定 SDK 为 star-hub `c237172f788412a93a3647129572b546ca949603`，这�
 | BuildSubmission | 三个 experiment ID | 三项 full 成功且超过门槛后生成包，状态 awaiting_approval |
 
 `task` 为 `invsqrt`、`dqi`、`dfthcsos`，`mode` 为 `quick` 或 `full`。Runtime 自动补齐 `userId`，模型不生成该字段。使用 SDK Action/Outcome，每个 Outcome 只有 `data.text`，其中是 JSON 字符串。`completed` 仅指这次工具请求完成；实验是否成功必须看 `GetExperiment.status`。轮询每次使用新的 Action ID；同一 ID 重发只重放首次回执，绝不再次执行。
+
+研究工具通过独立工作台的只读服务接口读取公开／官方节点，配置及数据范围见[研究工作台接入](../docs/research-workspace-link.md)。未配置该服务时返回 RESEARCH_UNCONFIGURED；不会读取成员投稿或自动写图谱。
 
 生成器入口接收 `--output-dir /out`，目录中预先复制了所选任务的 seed 文件。例如：
 

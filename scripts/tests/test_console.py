@@ -41,7 +41,7 @@ class ConsoleInitializationTests(unittest.TestCase):
         agent, = json.loads((self.state / "agents.json").read_text(encoding="utf-8"))
         directory, = json.loads((self.state / "worlds.json").read_text(encoding="utf-8"))
         self.assertEqual(console["hub_url"], "ws://127.0.0.1:28080")
-        self.assertEqual(Path(console["world_config"]), self.state / "world.toml")
+        self.assertEqual(Path(console["world_config"]).resolve(), (self.state / "world.toml").resolve())
         self.assertEqual(world["hub"]["url"], "ws://hub:8000")
         self.assertEqual(world["hub"]["allowed_agents"], {"agent-review": ["reviewer"]})
         self.assertEqual(world["hub"]["world_id"], "world-review")

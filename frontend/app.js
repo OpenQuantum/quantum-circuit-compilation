@@ -264,14 +264,14 @@ async function loadConversations(more = false) {
   state.conversationCursor = data.nextCursor; renderConversations();
 }
 async function loadChatDirectory() {
-  const generation = state.generation;
+  const generation = state.generation, chatVersion = state.chatVersion;
   try {
     const [agents] = await Promise.all([api(`${H}/agents`), loadConversations()]);
     if (generation !== state.generation) return;
     state.agents = agents.items || [];
     $('agent-select').innerHTML = '<option value="">自动选择</option>' + state.agents.map(agent => `<option value="${esc(agent.agentId)}">${esc(agent.name || agent.displayName || agent.agentId)}</option>`).join('');
     $('chat-connection').textContent = state.agents.length ? `${state.agents.length} 个已分配 Agent · 请求经 BFF 转发` : '暂无已分配 Agent · 可先保存任务';
-    if (state.conversations[0]) await openConversation(state.conversations[0].interactionSessionId);
+    if (chatVersion === state.chatVersion && state.conversations[0]) await openConversation(state.conversations[0].interactionSessionId);
   } catch (error) { if (generation === state.generation) showMessage('chat-error', error.message); }
 }
 async function openConversation(id) {

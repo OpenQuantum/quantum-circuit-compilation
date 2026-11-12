@@ -4,6 +4,10 @@
 
 比赛控制台的 BFF 和前端随本仓库分发。复用已有 Star Hub 与 Agent Runtime，按[控制台部署和验收说明](docs/console.md)从源码启动 World，使用网页发起实验并查看验证日志。
 
+两仓库本地接线、PostgreSQL 要求、真实工具调用烟测和新增工具入口见[本地 Runtime 工具联调](docs/local-runtime-link.md)。
+
+公开方法图谱通过 SearchResearchMethods 和 GetResearchNode 接入同一 agent，见[研究工作台接入](docs/research-workspace-link.md)。
+
 本目录已跑通官方基线的打包、完整验证和 Kaggle 提交，并完成后续公开方案优化和本地 Quantum World 实现。当前采用本地部署，未部署服务器。下文的基线分数、回执与复现命令均为历史基线记录，不代表当前账号最高分。
 
 ## 代码结构
@@ -87,7 +91,7 @@ quantum-search/
 │   ├── src/quantum_world/
 │   │   ├── cli.py                     # 启动服务、本地调用、人工管理
 │   │   ├── config.py                  # 配置加载与检查
-│   │   ├── tools.py                   # 六个 agent 工具及参数 Schema
+│   │   ├── tools.py                   # 八个 agent 工具及参数 Schema
 │   │   ├── protocol.py                # Star Protocol Action/Outcome 接入
 │   │   ├── service.py                 # 候选、实验队列、查询、取消、打包
 │   │   ├── runner.py                  # Docker 生成和官方验证子进程
@@ -164,7 +168,7 @@ invsqrt full PASS + dqi full PASS + dfthcsos full PASS
 消费单次审批 → 上传 Kaggle → 保存提交编号与回执
 ```
 
-quick 仅作筛选，不能用于打包。合并本地估分是三个 `reference_cost / task_cost` 的几何平均；Kaggle 使用秘密 salt，本地估分不等于线上分数。agent 的六个工具是 `GetTask`、`CreateCandidate`、`RunExperiment`、`GetExperiment`、`CancelExperiment`、`BuildSubmission`，没有审批或上传工具。上传结果不明确时标记 `unknown`，必须先人工核对 Kaggle，不自动重试。
+quick 仅作筛选，不能用于打包。合并本地估分是三个 `reference_cost / task_cost` 的几何平均；Kaggle 使用秘密 salt，本地估分不等于线上分数。agent 的八个工具是 `SearchResearchMethods`、`GetResearchNode`、`GetTask`、`CreateCandidate`、`RunExperiment`、`GetExperiment`、`CancelExperiment`、`BuildSubmission`，没有审批或上传工具。上传结果不明确时标记 `unknown`，必须先人工核对 Kaggle，不自动重试。
 
 主要开发入口：
 

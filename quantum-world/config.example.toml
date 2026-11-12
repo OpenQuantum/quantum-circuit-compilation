@@ -17,3 +17,7 @@ world_id = "quantum-world-local"
 [hub.allowed_agents]
 quantum-agent-local = ["local-user"]
 # Hub credentials are read from HUB_CLIENT_TOKEN, not this file.
+
+# Optional public research tools. Token is read from QUANTUM_RESEARCH_TOKEN.
+# [research]
+# url = "http://127.0.0.1:8787"

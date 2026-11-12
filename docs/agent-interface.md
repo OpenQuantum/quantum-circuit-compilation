@@ -23,6 +23,8 @@ Agent Runtime 独立维护于 [OpenQuantum/star-agent-runtime](https://github.co
 | 工具 | 其他必填参数 | 可选参数 |
 |---|---|---|
 | GetTask | task | — |
+| SearchResearchMethods | task | query、limit |
+| GetResearchNode | task、node_id | — |
 | CreateCandidate | task、files、entrypoint | description |
 | RunExperiment | task、mode | candidate_id |
 | GetExperiment | experiment_id | — |
@@ -30,6 +32,8 @@ Agent Runtime 独立维护于 [OpenQuantum/star-agent-runtime](https://github.co
 | BuildSubmission | experiments（三个完整实验 ID） | — |
 
 `task` 是 `invsqrt`、`dqi`、`dfthcsos`；`mode` 是 `quick` 或 `full`。候选使用受限相对路径到 UTF-8 源码的映射，输出文件通过 World 管理，不传任意宿主机路径。
+
+公开研究图谱工具的服务配置与数据范围见[研究工作台接入](research-workspace-link.md)。
 
 ## 请求与回执
 

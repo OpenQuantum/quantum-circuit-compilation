@@ -122,6 +122,8 @@ class WorldTests(unittest.IsolatedAsyncioTestCase):
             {t["name"] for t in DEFINITIONS},
             {
                 "GetTask",
+                "SearchResearchMethods",
+                "GetResearchNode",
                 "CreateCandidate",
                 "RunExperiment",
                 "GetExperiment",

@@ -10,6 +10,7 @@ import fcntl
 from .runner import OfficialRunner, digest, manifest
 from .store import Store, WorldError, canonical, identifier, now
 from .tools import VALIDATORS
+from .research import ResearchClient
 
 REFERENCE = {
     "invsqrt": 2076774.233715282,
@@ -37,6 +38,7 @@ class World:
         if not administrative:
             self.store.recover()
         self.runner = runner or OfficialRunner(settings)
+        self.research = ResearchClient(settings)
         self.workers = {}
         self.capacity = asyncio.Semaphore(1)
 
@@ -67,6 +69,14 @@ class World:
         request = canonical({"name": name, "params": params})
         schedule = None
         cancel = None
+        # External I/O is outside SQLite transactions and the event loop.
+        # Replays return the saved observation instead of refetching changing data.
+        research_data = None
+        if name in (
+            "SearchResearchMethods",
+            "GetResearchNode",
+        ) and not self.store.action(owner, action_id):
+            research_data = await asyncio.to_thread(self.research.query, name, params)
         with self.store.transaction():
             previous = self.store.action(owner, action_id)
             if previous:
@@ -76,7 +86,9 @@ class World:
                         "Action id reused with different arguments",
                     )
                 return previous[1]
-            if name == "GetTask":
+            if name in ("SearchResearchMethods", "GetResearchNode"):
+                data = research_data
+            elif name == "GetTask":
                 data = {
                     "task": params["task"],
                     "reference_cost": REFERENCE[params["task"]],

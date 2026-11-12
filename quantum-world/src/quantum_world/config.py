@@ -1,5 +1,6 @@
 from dataclasses import dataclass, field
 from pathlib import Path
+from urllib.parse import urlsplit
 import math
 import os
 import tomllib
@@ -19,8 +20,24 @@ class Settings:
     hub_url: str = "ws://127.0.0.1:8000"
     world_id: str = "quantum-world-local"
     allowed_agents: dict[str, list[str]] = field(default_factory=dict)
+    research_url: str | None = None
+    research_token: str | None = field(default=None, repr=False)
 
     def __post_init__(self):
+        if self.research_url:
+            url = urlsplit(self.research_url)
+            if (
+                url.scheme != "http"
+                or url.hostname not in ("127.0.0.1", "localhost")
+                or url.username
+                or url.password
+                or url.path
+                or url.query
+                or url.fragment
+            ):
+                raise ValueError(
+                    "research_url must be an explicit loopback HTTP origin without credentials or path"
+                )
         for name in ("max_workers", "job_timeout", "generator_timeout"):
             if type(getattr(self, name)) is not int or getattr(self, name) < 1:
                 raise ValueError(f"{name} must be a positive integer")
@@ -56,6 +73,7 @@ class Settings:
         path = Path(path).resolve()
         data = tomllib.loads(path.read_text())
         hub = data.pop("hub", {})
+        research = data.pop("research", {})
         for name in ("project_root", "data_root", "worker_python", "seed_path"):
             data[name] = path.parent / data[name]
         return cls(
@@ -63,4 +81,6 @@ class Settings:
             hub_url=hub.get("url", "ws://127.0.0.1:8000"),
             world_id=hub.get("world_id", "quantum-world-local"),
             allowed_agents=hub.get("allowed_agents", {}),
+            research_url=research.get("url"),
+            research_token=os.environ.get("QUANTUM_RESEARCH_TOKEN"),
         )
