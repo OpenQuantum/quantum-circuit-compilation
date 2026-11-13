@@ -9,12 +9,14 @@ const IDENTIFIER = /^[A-Za-z0-9_-]+$/;
 const VERIFIER = 'invsqrt.verify_submission_invsqrt';
 const SHOTS = Object.freeze({ quick: 262144, full: 200540928 });
 
-export function optimizationPrompt(baselineId, quickBaselineId) {
+export function optimizationPrompt(baselineId, quickBaselineId, priorIds = []) {
   assert.match(baselineId, IDENTIFIER);
   if (quickBaselineId) assert.match(quickBaselineId, IDENTIFIER);
+  for (const id of priorIds) assert.match(id, IDENTIFIER);
   return [
     `请独立优化 invsqrt 电路，在满足官方精度和正确性约束的前提下降低完整验证成本。官方样例已经完成一轮完整验证，实验 ID 为 ${baselineId}，请用这条实际记录作为基线。`,
     ...(quickBaselineId ? [`官方样例的 quick 筛选对照实验 ID 为 ${quickBaselineId}，无需重复运行基线。`] : []),
+    ...(priorIds.length ? [`此前尝试的实验 ID：${priorIds.join('、')}。可以直接用这些已有记录中的预筛选和失败证据决定下一步，避免重复已做过的分析。`] : []),
     '优先把验证预算用于相对基线电路有实际改动的候选。本地分析和预筛选可以在你编写的候选生成器里进行，由你决定如何设计和筛选改法。',
     '本轮预算最多 3 次 quick，最多 1 次 full（已完成的基线不占预算）。请根据实际 quick 结果决定是否值得对某个候选做完整验证，保留同一候选来比较；不要构建提交包或上传。',
     '如实验仍排队或运行，可以合理等待，或说明未完成并给出实验 ID。选出候选并登记完整验证后，如果仍在运行就报告该 ID，无需反复等待。最后给出你实际完成的步骤、实验 ID、结果和选择理由，未完成的结果不要猜测。',

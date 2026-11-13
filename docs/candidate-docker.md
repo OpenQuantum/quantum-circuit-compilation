@@ -49,4 +49,6 @@ node scripts/tests/invsqrt_optimization_live_e2e.mjs --base-url http://127.0.0.1
 
 `ReadInversqrtReference` 可以按行读取固定的官方参考生成器源码。它校验源码 SHA-256，供 Agent 在创建候选前查看。
 
+另开一轮预算时，可以用新的 `--state-file` 和一个或多个 `--prior-attempt-experiment-id`，把之前已结束的候选 quick 记录交给 Agent 自己参考。
+
 验收记录包含输入、Run、Action/Outcome、候选、实验、构建产物与验证器哈希，以及完整验证成本。退出码 `0` 表示验证确认成本下降，`2` 表示两份完整验证可比且未下降，其他非零状态请查看报告。这里比较的是 `invsqrt` 单项本地成本。

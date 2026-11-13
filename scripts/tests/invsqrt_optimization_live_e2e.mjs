@@ -25,6 +25,7 @@ const { values: options } = parseArgs({ options: {
   'state-file': { type: 'string', default: resolve(root, '.local-console/live/invsqrt-optimization-evidence.json') },
   'baseline-experiment-id': { type: 'string' },
   'baseline-quick-experiment-id': { type: 'string' },
+  'prior-attempt-experiment-id': { type: 'string', multiple: true },
   'continue-pending': { type: 'boolean', default: false },
   playwright: { type: 'string', default: 'playwright' },
   user: { type: 'string', default: 'local-user' },
@@ -287,7 +288,8 @@ async function main() {
     && ['http:', 'https:'].includes(base.protocol) && base.href === `${base.origin}/`,
   'Use a local Console origin as --base-url');
   assert.ok(Number.isFinite(timeout) && timeout > 0, 'Expected positive --timeout-seconds');
-  const prompt = optimizationPrompt(baselineId, quickBaselineId);
+  const priorIds = options['prior-attempt-experiment-id'] ?? [];
+  const prompt = optimizationPrompt(baselineId, quickBaselineId, priorIds);
   const identity = { baseUrl: base.origin, userId: options.user, agent: options.agent, world: options.world,
     baselineId, quickBaselineId };
   const deadline = Date.now() + timeout;
@@ -327,6 +329,12 @@ async function main() {
     assert.equal(baseline.id, baselineId);
     const baselineLog = await verifyLog(get, baselineId);
     requireBaseline(baseline, identity, baselineLog.report);
+    for (const id of priorIds) {
+      const row = await get(experimentPath(id));
+      assert.ok(row.id === id && row.task === 'invsqrt' && row.sender_id === identity.agent
+        && row.mode === 'quick' && row.candidate_id && EXPERIMENT_TERMINAL.has(row.status),
+      'Prior attempt must be a terminal invsqrt quick candidate from this Agent');
+    }
     let quickBaseline = null;
     if (quickBaselineId) {
       const row = await get(experimentPath(quickBaselineId));
@@ -401,6 +409,7 @@ async function main() {
 if (options.help) {
   console.log('node scripts/tests/invsqrt_optimization_live_e2e.mjs --baseline-experiment-id ID'
     + ' [--baseline-quick-experiment-id ID] [--base-url URL] [--login-code-file FILE]'
+    + ' [--prior-attempt-experiment-id ID]'
     + ' [--state-file FILE] [--playwright PATH] [--user ID] [--agent ID] [--world ID]'
     + ' [--timeout-seconds N] [--continue-pending]');
 } else {

@@ -202,6 +202,14 @@ test('prompt asks for an autonomous goal and bounded budget without prescribing 
   assert.doesNotMatch(prompt, /GetTask|GetExperiment|RunExperiment|CreateCandidate/);
 });
 
+test('an optimization retry can cite prior experiment evidence without prescribing a solution', () => {
+  const prompt = optimizationPrompt('exp-official', 'exp-official-quick', ['exp-prior']);
+  assert.match(prompt, /exp-prior/);
+  assert.match(prompt, /此前尝试/);
+  assert.doesNotMatch(prompt, /GetTask|GetExperiment|RunExperiment|CreateCandidate/);
+  assert.throws(() => optimizationPrompt('exp-official', null, ['../outside']));
+});
+
 test('accepts the optional quick baseline only with the same official build and comparable verifier settings', () => {
   const { baseline } = fixture();
   const quick = record('exp-official-quick', 'quick', null, 98, OFFICIAL_SHA256);
