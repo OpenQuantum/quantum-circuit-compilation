@@ -17,7 +17,7 @@ from urllib.parse import urlsplit
 
 ROOT = Path(__file__).resolve().parents[1]
 IDENTIFIER = re.compile(r"[a-zA-Z0-9._:-]{1,128}\Z")
-TOOLS = ["GetTask", "SearchResearchMethods", "GetResearchNode", "CreateCandidate", "RunExperiment", "GetExperiment", "CancelExperiment", "BuildSubmission"]
+TOOLS = ["GetTask", "SearchResearchMethods", "GetResearchNode", "SearchResearchSolutions", "StartResearchSourceDownload", "GetResearchDownloadJob", "GetResearchSnapshotStructure", "ReadResearchSnapshotSource", "ImportResearchSnapshot", "CreateCandidate", "RunExperiment", "GetExperiment", "CancelExperiment", "BuildSubmission"]
 HOST_ENVIRONMENT = {
     "PATH", "SYSTEMROOT", "WINDIR", "USERPROFILE", "HOME", "APPDATA", "LOCALAPPDATA",
     "TEMP", "TMP", "TMPDIR", "LANG", "TZ", "HTTP_PROXY", "HTTPS_PROXY", "ALL_PROXY",

@@ -56,3 +56,25 @@ node scripts/tests/research_live_e2e.mjs
 浏览器验收状态保存在 `.local-console/live/research-browser-evidence.json`，复跑优先检查已保存的 runId，不重复发起模型请求。只验证检索和详情，不运行实验或发布研究结果。
 
 2026-11-12 真实网页验收通过，runId 为 `run_a872f7f3971e4ef1b799bedd7bc0dd40`，先调用 SearchResearchMethods，再调用 GetResearchNode，读取公开节点 `invsqrt-hw-25` 的摘要和 Kaggle 数据集来源。研究仓库 43 项测试、比赛端完整回归 59 项测试（另含 14 个子测试）及前端 9 项测试通过。两仓库分别维护接口与适配器源码；服务凭据、运行数据库和本机浏览器验收记录不纳入 Git。
+
+## 固定版本的源码快照
+
+保留上述两个旧工具。新增 `SearchResearchSolutions(task, query?, limit?)` 返回公开源码的 `source_id` 和 `source_version`；将这两个精确值交给 `StartResearchSourceDownload(source_id, version)`。之后用 `GetResearchDownloadJob(job_id)` 查询状态。任务完成后，`GetResearchSnapshotStructure(job_id)` 可查看静态结构，`ReadResearchSnapshotSource(job_id, path, start_line, end_line)` 可读取限定行范围，`ImportResearchSnapshot(job_id)` 则把快照交给 World。上述三个操作只接受由当前用户发起并已完成、带有 snapshot_id 的任务，部分完成的任务也须带有效 snapshot_id。重复同一 Action 会重放回执；要轮询最新状态须使用新的 Action ID。下载请求使用稳定的幂等键。
+
+World 先验证 manifest 的来源、版本、赛道与已拥有任务一致，并验证 tar.gz 大小和 SHA-256、所有清单文件的大小与 SHA-256。归档只允许清单中列出的普通文件，拒绝重复或不安全路径、链接和额外文件，并限制压缩及解压大小和文件数。成功后写入独立的 World 用户导入目录，回执给出不透明的导入 ID、文件数和快照 ID，不暴露宿主机路径。相同导入目录仅在文件内容完全一致时复用，冲突时拒绝且保留现有内容。导入不执行源码，也不创建候选；源码属于不可信材料。许可证状态与缺失依赖应以图谱 manifest/structure 为准，导入不代表源码经过官方验证。
+
+读取使用既有 `QUANTUM_RESEARCH_TOKEN`；创建下载任务额外需要 `QUANTUM_RESEARCH_DOWNLOAD_TOKEN`，对应图谱服务的独立 `QCC_AGENT_DOWNLOAD_TOKEN`。缺少下载凭据时只读查询仍可用，但无法创建下载任务。`scripts/local_stack.py` 会为其私有本地运行目录生成独立凭据并配置两端；服务地址仍由 `[research] url` 配置并限制为本机 origin。该操作可能触发研究服务下载指定公开源码，不下载产物，不会运行代码。
+
+源码下载需要工作台采集器的 Python 环境。启动器优先使用 `--research-source-python /path/to/venv/bin/python` 指定的解释器，否则在存在且可执行时使用工作台的 `.runtime/kaggle-venv/bin/python`，并设置 `QCC_SOURCE_PYTHON`。两者均未提供时研究服务使用自身默认 Python；如果该环境没有所需下载依赖，下载任务会失败。只读查询不依赖该环境。
+
+启动器仅向研究服务及其下载子进程传递本机已配置的大小写 HTTP(S)/ALL_PROXY 代理变量；NO_PROXY 会保留已有排除项并确保本机地址绕过代理。启动器不输出代理配置。
+
+可复用的真实联调脚本需要显式指定一个**隔离测试服务**的连接文件（JSON 包含 `url`、`read_token`、`download_token`，应限制文件权限）。它会在该服务上创建真实下载任务，但只在临时 World 目录导入，结束后清理；不调用模型或运行下载的源码。未指定环境变量时脚本跳过。
+
+```bash
+QCC_ISOLATED_RESEARCH_CONNECTION=/path/to/private-test-connection.json \
+  PYTHONPATH=quantum-world/src quantum-bff/.venv/bin/python \
+  scripts/tests/research_snapshot_e2e.py
+```
+
+默认验证 DQI streamed v11。命令末尾加 `--source hw22` 可验证 HW-22 Notebook v24：脚本检查四个快照文件、源码片段、缺失电路及生成器的声明、空入口列表和用户隔离；该快照未确认包含完整生成器，不应视为可直接复现的候选程序。

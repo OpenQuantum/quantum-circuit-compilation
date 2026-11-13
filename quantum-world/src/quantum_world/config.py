@@ -22,6 +22,7 @@ class Settings:
     allowed_agents: dict[str, list[str]] = field(default_factory=dict)
     research_url: str | None = None
     research_token: str | None = field(default=None, repr=False)
+    research_download_token: str | None = field(default=None, repr=False)
 
     def __post_init__(self):
         if self.research_url:
@@ -83,4 +84,5 @@ class Settings:
             allowed_agents=hub.get("allowed_agents", {}),
             research_url=research.get("url"),
             research_token=os.environ.get("QUANTUM_RESEARCH_TOKEN"),
+            research_download_token=os.environ.get("QUANTUM_RESEARCH_DOWNLOAD_TOKEN"),
         )

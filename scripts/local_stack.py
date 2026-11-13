@@ -58,18 +58,29 @@ quantum-agent-local = ["local-user"]
         "hub-admin-token",
         "postgres-password",
         "research-token",
+        "research-download-token",
     ):
         write_once(STATE / name, secrets.token_urlsafe(48) + "\n")
     world_config = STATE / "world.toml"
     if "[research]" not in world_config.read_text():
         with world_config.open("a") as stream:
             stream.write('\n[research]\nurl = "http://127.0.0.1:8787"\n')
-    # Update only the new read-only tools in this launcher's private directory.
+    # Update only the research tools in this launcher's private directory.
     directory = STATE / "worlds.json"
     worlds = json.loads(directory.read_text())
     for world in worlds:
         world["allowedTools"] = sorted(
-            set(world["allowedTools"]) | {"SearchResearchMethods", "GetResearchNode"}
+            set(world["allowedTools"])
+            | {
+                "SearchResearchMethods",
+                "GetResearchNode",
+                "SearchResearchSolutions",
+                "StartResearchSourceDownload",
+                "GetResearchDownloadJob",
+                "GetResearchSnapshotStructure",
+                "ReadResearchSnapshotSource",
+                "ImportResearchSnapshot",
+            }
         )
     directory.write_text(json.dumps(worlds, ensure_ascii=False, indent=2))
     if not (args.research_repo / ".runtime/workspace.sqlite").exists():
@@ -121,7 +132,37 @@ voice_enabled = false
     return source["model_id"]
 
 
+def source_python(research_repo, explicit):
+    candidate = explicit or research_repo / ".runtime/kaggle-venv/bin/python"
+    candidate = Path(os.path.abspath(Path(candidate).expanduser()))
+    if candidate.is_file() and os.access(candidate, os.X_OK):
+        return str(candidate)
+    if explicit:
+        raise ValueError("The configured research source Python must be executable")
+    return None
+
+
+def research_proxy_env(environ):
+    values = {
+        name: environ[name]
+        for name in (
+            "HTTP_PROXY", "HTTPS_PROXY", "ALL_PROXY",
+            "http_proxy", "https_proxy", "all_proxy",
+        )
+        if environ.get(name)
+    }
+    exclusions = ["127.0.0.1", "localhost", "::1"]
+    for name in ("NO_PROXY", "no_proxy"):
+        for host in environ.get(name, "").split(","):
+            host = host.strip()
+            if host and host not in exclusions:
+                exclusions.append(host)
+    values["NO_PROXY"] = values["no_proxy"] = ",".join(exclusions)
+    return values
+
+
 def main(args):
+    research_source_python = source_python(args.research_repo, args.research_source_python)
     model = prepare(args)
     client = (STATE / "hub-client-token").read_text().strip()
     password = (STATE / "postgres-password").read_text().strip()
@@ -244,16 +285,22 @@ def main(args):
         )
         wait_ready("http://127.0.0.1:28080/health")
         research_token = (STATE / "research-token").read_text().strip()
+        research_download_token = (STATE / "research-download-token").read_text().strip()
+        research_env = dict(
+            base,
+            QCC_HOST="127.0.0.1",
+            QCC_PORT="8787",
+            QCC_AGENT_TOKEN=research_token,
+            QCC_AGENT_DOWNLOAD_TOKEN=research_download_token,
+            QCC_DATA_DIR=str(args.research_repo / ".runtime"),
+        )
+        research_env.update(research_proxy_env(os.environ))
+        if research_source_python:
+            research_env["QCC_SOURCE_PYTHON"] = research_source_python
         spawn(
             "research",
             ["node", str(args.research_repo / "src/server.mjs")],
-            dict(
-                base,
-                QCC_HOST="127.0.0.1",
-                QCC_PORT="8787",
-                QCC_AGENT_TOKEN=research_token,
-                QCC_DATA_DIR=str(args.research_repo / ".runtime"),
-            ),
+            research_env,
         )
         wait_ready(
             "http://127.0.0.1:8787/api/agent/research?task=invsqrt&limit=1",
@@ -276,6 +323,7 @@ def main(args):
                 base,
                 QUANTUM_OPERATOR_TOKEN=(STATE / "operator-token").read_text().strip(),
                 QUANTUM_RESEARCH_TOKEN=research_token,
+                QUANTUM_RESEARCH_DOWNLOAD_TOKEN=research_download_token,
             ),
         )
         wait_ready(
@@ -367,5 +415,6 @@ if __name__ == "__main__":
     parser.add_argument(
         "--research-repo", type=Path, default=ROOT.parent / "quantum-research-workspace"
     )
+    parser.add_argument("--research-source-python", type=Path)
     parser.add_argument("--model-config", type=Path, required=True)
     main(parser.parse_args())

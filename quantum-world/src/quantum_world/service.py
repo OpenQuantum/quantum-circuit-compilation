@@ -6,6 +6,7 @@ import math
 from pathlib import PurePosixPath
 import zipfile
 import fcntl
+import hashlib
 
 from .runner import OfficialRunner, digest, manifest
 from .store import Store, WorldError, canonical, identifier, now
@@ -17,6 +18,19 @@ REFERENCE = {
     "dqi": 24439463583672.93,
     "dfthcsos": 3355599588.3155375,
 }
+
+RESEARCH_V1 = {
+    "SearchResearchSolutions",
+    "StartResearchSourceDownload",
+    "GetResearchDownloadJob",
+    "GetResearchSnapshotStructure",
+    "ReadResearchSnapshotSource",
+    "ImportResearchSnapshot",
+}
+
+
+def research_job_id(owner, remote_id):
+    return "rjob-" + hashlib.sha256(canonical([owner, remote_id]).encode()).hexdigest()
 
 
 class World:
@@ -41,6 +55,7 @@ class World:
         self.research = ResearchClient(settings)
         self.workers = {}
         self.capacity = asyncio.Semaphore(1)
+        self.research_lock = asyncio.Lock()
 
     def owner(self, sender, params):
         if params.get("userId") not in self.settings.allowed_agents.get(sender, []):
@@ -50,6 +65,12 @@ class World:
         return canonical([sender, params["userId"]])
 
     async def call(self, sender, action_id, name, params):
+        if name in RESEARCH_V1:
+            async with self.research_lock:
+                return await self._call(sender, action_id, name, params)
+        return await self._call(sender, action_id, name, params)
+
+    async def _call(self, sender, action_id, name, params):
         if self.administrative:
             raise WorldError(
                 "ADMIN_ONLY", "Administrative session cannot execute agent actions"
@@ -67,16 +88,97 @@ class World:
                 "INVALID_ARGUMENTS", "Arguments do not match the tool schema."
             )
         request = canonical({"name": name, "params": params})
+        previous = self.store.action(owner, action_id)
+        if previous:
+            if previous[0] != request:
+                raise WorldError(
+                    "IDEMPOTENCY_CONFLICT", "Action id reused with different arguments"
+                )
+            return previous[1]
         schedule = None
         cancel = None
         # External I/O is outside SQLite transactions and the event loop.
         # Replays return the saved observation instead of refetching changing data.
         research_data = None
+        research_record = None
         if name in (
             "SearchResearchMethods",
             "GetResearchNode",
         ) and not self.store.action(owner, action_id):
             research_data = await asyncio.to_thread(self.research.query, name, params)
+        if name in RESEARCH_V1:
+            job = None
+            if name not in ("SearchResearchSolutions", "StartResearchSourceDownload"):
+                job = self.store.get(
+                    "research_job", owner, research_job_id(owner, params["job_id"])
+                )
+            if name in (
+                "GetResearchSnapshotStructure",
+                "ReadResearchSnapshotSource",
+                "ImportResearchSnapshot",
+            ):
+                if job["status"] not in ("succeeded", "partial") or not job.get(
+                    "snapshot_id"
+                ):
+                    raise WorldError(
+                        "RESEARCH_NOT_READY", "Research snapshot is not ready"
+                    )
+            if name == "ImportResearchSnapshot":
+                import_id = (
+                    "research-"
+                    + hashlib.sha256(canonical([owner, action_id]).encode()).hexdigest()
+                )
+                directory = self.settings.data_root / "research-imports" / import_id
+                manifest_data = await asyncio.to_thread(
+                    self.research.import_snapshot, job["snapshot_id"], directory, job
+                )
+                research_data = {
+                    "import_id": import_id,
+                    "snapshot_id": job["snapshot_id"],
+                    "task": job["task"],
+                    "file_count": len(manifest_data["files"]),
+                    "executed": False,
+                }
+                research_record = (
+                    "research_import",
+                    {
+                        "id": import_id,
+                        **research_data,
+                        "directory": str(directory / "files"),
+                        "manifest": manifest_data,
+                    },
+                )
+            else:
+                key = hashlib.sha256(canonical([owner, action_id]).encode()).hexdigest()
+                research_data = await asyncio.to_thread(
+                    self.research.v1,
+                    name,
+                    params,
+                    key=key,
+                    snapshot_id=job.get("snapshot_id") if job else None,
+                )
+                if name in ("StartResearchSourceDownload", "GetResearchDownloadJob"):
+                    remote = research_data["job"]
+                    if job and any(
+                        remote.get(k) != job.get(k)
+                        for k in ("source_id", "source_version", "task")
+                    ):
+                        raise WorldError(
+                            "RESEARCH_INVALID_RESPONSE", "Research job identity changed"
+                        )
+                    if (
+                        job
+                        and job.get("snapshot_id")
+                        and remote.get("snapshot_id") != job["snapshot_id"]
+                    ):
+                        raise WorldError(
+                            "RESEARCH_INVALID_RESPONSE",
+                            "Research snapshot identity changed",
+                        )
+                    research_record = (
+                        "research_job",
+                        {**remote, "id": research_job_id(owner, remote["job_id"])},
+                    )
         with self.store.transaction():
             previous = self.store.action(owner, action_id)
             if previous:
@@ -86,8 +188,13 @@ class World:
                         "Action id reused with different arguments",
                     )
                 return previous[1]
-            if name in ("SearchResearchMethods", "GetResearchNode"):
+            if (
+                name in ("SearchResearchMethods", "GetResearchNode")
+                or name in RESEARCH_V1
+            ):
                 data = research_data
+                if research_record:
+                    self.store.put(research_record[0], owner, research_record[1])
             elif name == "GetTask":
                 data = {
                     "task": params["task"],
@@ -175,9 +282,11 @@ class World:
                     self.store.put("experiment", owner, job)
                 data = {
                     "experiment_id": job["id"],
-                    "status": "cancelling"
-                    if cancel and job["status"] == "running"
-                    else job["status"],
+                    "status": (
+                        "cancelling"
+                        if cancel and job["status"] == "running"
+                        else job["status"]
+                    ),
                 }
             elif name == "BuildSubmission":
                 data = self._package(owner, params["experiments"])
