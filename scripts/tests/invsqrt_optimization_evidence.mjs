@@ -220,6 +220,18 @@ export function assessOptimization({ identity, baseline, experiments, candidates
       circuitSha256: full.experiment.provenance.verifier_report.circuit_sha256 }, validation: initial.validation };
 }
 
+export function canConfirmFull(run, actions, experiments, quickBaseline) {
+  if (run.status !== 'succeeded' || !run.modelDecision?.length
+    || !cost(quickBaseline?.result?.diagnostic_cost)
+    || actions.some(action => action.name === 'RunExperiment' && action.args.mode === 'full')) return false;
+  return experiments.some(row => row.mode === 'quick' && row.status === 'succeeded'
+    && row.result?.status === 'PASS' && cost(row.result.diagnostic_cost)
+    && row.result.diagnostic_cost < quickBaseline.result.diagnostic_cost
+    && builtCircuit(row.provenance).sha256 !== OFFICIAL_SHA256
+    && actions.some(action => action.name === 'GetExperiment'
+      && action.args.experiment_id === row.id && action.result?.status === 'succeeded'));
+}
+
 export function needsContinuation(run, actions, experiments) {
   const terminal = run.status === 'succeeded'
     || (run.status === 'failed' && run.error?.code === 'GENERATION_BUDGET_EXCEEDED');

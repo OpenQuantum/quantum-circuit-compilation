@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
-  OFFICIAL_SHA256, assessOptimization, needsContinuation, optimizationPrompt,
+  OFFICIAL_SHA256, assessOptimization, canConfirmFull, needsContinuation, optimizationPrompt,
   recoverRunId, readWorldActions, requireBaseline, requireBaselineQuick,
 } from './invsqrt_optimization_evidence.mjs';
 
@@ -200,6 +200,17 @@ test('prompt asks for an autonomous goal and bounded budget without prescribing 
   assert.match(prompt, /本地分析和预筛选/);
   assert.match(prompt, /电路有实际改动/);
   assert.doesNotMatch(prompt, /GetTask|GetExperiment|RunExperiment|CreateCandidate/);
+});
+
+test('operator confirmation requires an Agent-observed improving quick and unused full budget', () => {
+  const item = fixture();
+  const latest = { status: 'succeeded', modelDecision: [{ text: '是否执行这个候选的 full 验证？' }] };
+  const quick = item.experiments[0];
+  const actions = item.actions.slice(0, -1);
+  assert.equal(canConfirmFull(latest, actions, [quick], { result: { diagnostic_cost: 98 } }), true);
+  assert.equal(canConfirmFull(latest, item.actions, [quick], { result: { diagnostic_cost: 98 } }), false);
+  assert.equal(canConfirmFull(latest, actions.slice(0, -1), [quick], { result: { diagnostic_cost: 98 } }), false);
+  assert.equal(canConfirmFull(latest, actions, [quick], { result: { diagnostic_cost: 60 } }), false);
 });
 
 test('an optimization retry can cite prior experiment evidence without prescribing a solution', () => {

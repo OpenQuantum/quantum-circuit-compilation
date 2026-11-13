@@ -9,13 +9,14 @@ import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 import { orderedMessages } from '../../frontend/model.js';
 import {
-  BUDGET, EXPERIMENT_TERMINAL, RUN_TERMINAL, assessOptimization, needsContinuation,
+  BUDGET, EXPERIMENT_TERMINAL, RUN_TERMINAL, assessOptimization, canConfirmFull, needsContinuation,
   optimizationPrompt, readWorldActions, recoverRunId, requireBaseline, requireBaselineQuick,
 } from './invsqrt_optimization_evidence.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const H = '/api/human/v1';
 const Q = '/api/quantum/v1';
+const FULL_CONFIRMATION = '已确认。请继续执行你刚才建议的完整验证，沿用你已经选定的候选和原预算。只登记一次 full，不再新增 quick，也不上传。登记后告诉我实验 ID，运行中可以先结束对话。';
 const runPattern = /^\/api\/human\/v1\/interactions\/([^/]+)\/runs$/;
 const routePattern = '**/api/human/v1/interactions/*/runs';
 const inputRoutePattern = '**/api/human/v1/runs/*/inputs';
@@ -27,6 +28,7 @@ const { values: options } = parseArgs({ options: {
   'baseline-quick-experiment-id': { type: 'string' },
   'prior-attempt-experiment-id': { type: 'string', multiple: true },
   'continue-pending': { type: 'boolean', default: false },
+  'confirm-full': { type: 'boolean', default: false },
   playwright: { type: 'string', default: 'playwright' },
   user: { type: 'string', default: 'local-user' },
   agent: { type: 'string', default: 'quantum-agent-local' },
@@ -344,6 +346,7 @@ async function main() {
       quickBaseline = { row, log };
     }
     state = await readJson(stateFile);
+    assert.ok(!options['confirm-full'] || state?.attempts.length, 'Full confirmation requires an existing Agent run');
     if (state) {
       assert.equal(state.version, 1);
       assert.deepEqual(state.identity, identity, 'State belongs to another Console or baseline');
@@ -375,6 +378,15 @@ async function main() {
       });
       const continuationAllowed = verdict.status === 'full_not_run' && state.attempts.length < 3
         && needsContinuation(latest, trace.actions, trace.experiments);
+      const confirmationAllowed = verdict.status === 'full_not_run'
+        && !state.attempts.some(attempt => attempt.prompt === FULL_CONFIRMATION)
+        && canConfirmFull(trace.runs.at(-1), trace.actions, trace.experiments, quickBaseline?.row);
+      if (options['confirm-full'] && confirmationAllowed && Date.now() < deadline) {
+        const interactionId = state.attempts[0].interactionId;
+        await reconcileConversation(page, latest, interactionId, deadline);
+        await sendGoal(page, state, FULL_CONFIRMATION, interactionId);
+        continue;
+      }
       if (options['continue-pending'] && continuationAllowed && !continued && Date.now() < deadline) {
         const interactionId = state.attempts[0].interactionId;
         await reconcileConversation(page, latest, interactionId, deadline);
@@ -393,7 +405,7 @@ async function main() {
       else if (['improved', 'no_improvement'].includes(verdict.status)
         && !trace.runs.at(-1).modelDecision.length) verdict.status = 'model_decision_missing';
       state.report = { ...verdict, measuredStatus, observedAt: stamp(),
-        interactionId: state.attempts[0].interactionId, runIds: runs.map(run => run.runId), continuationAllowed };
+        interactionId: state.attempts[0].interactionId, runIds: runs.map(run => run.runId), continuationAllowed, confirmationAllowed };
       await writeJson(stateFile, state);
       await saveTerminalPageEvidence(page, latest, state.report.interactionId, verdict, state);
       if (state.pageEvidence) await writeJson(stateFile, state);
@@ -411,7 +423,7 @@ if (options.help) {
     + ' [--baseline-quick-experiment-id ID] [--base-url URL] [--login-code-file FILE]'
     + ' [--prior-attempt-experiment-id ID]'
     + ' [--state-file FILE] [--playwright PATH] [--user ID] [--agent ID] [--world ID]'
-    + ' [--timeout-seconds N] [--continue-pending]');
+    + ' [--timeout-seconds N] [--continue-pending] [--confirm-full]');
 } else {
   try { await main(); }
   catch (error) {
