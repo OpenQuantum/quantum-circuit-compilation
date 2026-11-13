@@ -9,8 +9,9 @@ import fcntl
 
 from .runner import OfficialRunner, digest, manifest
 from .store import Store, WorldError, canonical, identifier, now
-from .tools import VALIDATORS
+from .tools import RESEARCH_TOOLS, VALIDATORS
 from .research import ResearchClient
+from .invsqrt import read_reference, task_context
 
 REFERENCE = {
     "invsqrt": 2076774.233715282,
@@ -72,11 +73,16 @@ class World:
         # External I/O is outside SQLite transactions and the event loop.
         # Replays return the saved observation instead of refetching changing data.
         research_data = None
-        if name in (
-            "SearchResearchMethods",
-            "GetResearchNode",
-        ) and not self.store.action(owner, action_id):
+        invsqrt_context = None
+        reference_section = None
+        if name in RESEARCH_TOOLS and not self.store.action(owner, action_id):
             research_data = await asyncio.to_thread(self.research.query, name, params)
+        elif name == "GetTask" and params["task"] == "invsqrt" and not self.store.action(owner, action_id):
+            invsqrt_context = await asyncio.to_thread(task_context, self.settings)
+        elif name == "ReadInversqrtReference" and not self.store.action(owner, action_id):
+            reference_section = await asyncio.to_thread(
+                read_reference, self.settings.project_root, params["start_line"], params["lines"]
+            )
         with self.store.transaction():
             previous = self.store.action(owner, action_id)
             if previous:
@@ -86,8 +92,10 @@ class World:
                         "Action id reused with different arguments",
                     )
                 return previous[1]
-            if name in ("SearchResearchMethods", "GetResearchNode"):
+            if name in RESEARCH_TOOLS:
                 data = research_data
+            elif name == "ReadInversqrtReference":
+                data = reference_section
             elif name == "GetTask":
                 data = {
                     "task": params["task"],
@@ -103,6 +111,8 @@ class World:
                         "dfthcsos": "Official shape/angle contract, ANGLE <=128 qubits, coefficient errors <=0.020 Ha",
                     }[params["task"]],
                 }
+                if invsqrt_context:
+                    data.update(invsqrt_context)
             elif name == "CreateCandidate":
                 data = self._candidate(owner, params)
             elif name == "RunExperiment":

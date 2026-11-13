@@ -3,14 +3,17 @@
 import json
 from star_protocol import EnvironmentClient, ProtocolConflictError
 from .store import WorldError, canonical, identifier
-from .tools import DEFINITIONS
+from .tools import DEFINITIONS, RESEARCH_TOOLS
 
 
 class QuantumEnvironment(EnvironmentClient):
     def __init__(self, world):
         super().__init__(world.settings.world_id)
         self.world = world
-        self.configure_capabilities(tools=DEFINITIONS, events=[])
+        tools = DEFINITIONS
+        if not (world.settings.research_url and world.settings.research_token):
+            tools = [definition for definition in DEFINITIONS if definition["name"] not in RESEARCH_TOOLS]
+        self.configure_capabilities(tools=tools, events=[])
 
     async def on_action(self, sender, content):
         try:

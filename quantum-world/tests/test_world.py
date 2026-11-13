@@ -124,6 +124,7 @@ class WorldTests(unittest.IsolatedAsyncioTestCase):
                 "GetTask",
                 "SearchResearchMethods",
                 "GetResearchNode",
+                "ReadInversqrtReference",
                 "CreateCandidate",
                 "RunExperiment",
                 "GetExperiment",

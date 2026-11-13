@@ -106,6 +106,8 @@ uv run --project quantum-bff --no-sync python scripts/console.py --state-dir .lo
 
 ## 从空实验库验收
 
+若要让 Agent 创建并运行自己的候选，先按[候选生成器部署与自主优化验收](candidate-docker.md)配置 World 和生成器镜像。
+
 本页的镜像和启动步骤已在 Windows + Docker Desktop 上完成 `invsqrt` quick 验收。Apple Silicon 可用 Docker Desktop 默认的 ARM64 构建，验收以本机运行结果为准。
 
 1. 从网页请 Agent 调用 `GetTask(task="invsqrt")`。

@@ -139,7 +139,8 @@ class ValidationImageTests(unittest.TestCase):
         bases = re.findall(r"^FROM\s+(\S+)", content, re.M)
         self.assertTrue(any(base.startswith("python:3.13") for base in bases), bases)
         self.assertTrue(any(base.startswith("python:3.12") for base in bases), bases)
-        self.assertTrue(all(base.startswith("python:") for base in bases), bases)
+        self.assertTrue(all(base.startswith(("python:", "docker:")) and "@sha256:" in base for base in bases), bases)
+        self.assertTrue(bases[-1].startswith("python:3.13"), bases)
         self.assertIn("--from=star_sdk", content)
         self.assertIn("[http]", content)
 

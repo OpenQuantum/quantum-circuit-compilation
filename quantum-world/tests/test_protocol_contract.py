@@ -1,5 +1,6 @@
 """Public SDK/World contract tests; no agent runtime source dependency."""
 import json
+from dataclasses import replace
 from pathlib import Path
 from tempfile import TemporaryDirectory
 import unittest
@@ -40,8 +41,25 @@ class ProtocolContractTests(unittest.IsolatedAsyncioTestCase):
         await self.endpoint.send_specification('external-agent')
         envelope = self.endpoint.send.call_args.args[0]
         validate_compact_content('specification', envelope.payload.content)
-        self.assertEqual(envelope.payload.content['tools'], DEFINITIONS)
+        self.assertEqual(envelope.payload.content['tools'], [
+            d for d in DEFINITIONS if d['name'] not in {'SearchResearchMethods', 'GetResearchNode'}
+        ])
         self.assertNotIn('SubmitSubmission', {d['name'] for d in envelope.payload.content['tools']})
+
+    async def test_configured_graph_tools_still_advertised(self):
+        for token in (None, 'unit-test-token'):
+            with self.subTest(token_configured=bool(token)):
+                self.world.settings = replace(
+                    self.world.settings, research_url='http://127.0.0.1:8765', research_token=token
+                )
+                endpoint = QuantumEnvironment(self.world)
+                endpoint.send = AsyncMock()
+                await endpoint.send_specification('external-agent')
+                tools = endpoint.send.call_args.args[0].payload.content['tools']
+                expected = DEFINITIONS if token else [
+                    d for d in DEFINITIONS if d['name'] not in {'SearchResearchMethods', 'GetResearchNode'}
+                ]
+                self.assertEqual(tools, expected)
 
     async def test_build_submission_advertises_one_successful_full_per_benchmark(self):
         self.endpoint.send = AsyncMock()

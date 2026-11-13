@@ -10,6 +10,8 @@ RUN python3.12 -m venv /opt/quantum-worker \
     && /opt/quantum-worker/bin/python -m pip install --no-cache-dir --no-binary=kickmix -r /tmp/requirements-worker.txt \
     && /opt/quantum-worker/bin/python -m pip check
 
+FROM docker:29.9.3-cli@sha256:5a7af0dcb0e46c803efe9b45371dd21cb500e5b4453250394ac6f06d49b6e6f1 AS docker_cli
+
 FROM python:3.13.18-slim-trixie@sha256:e48f59cdba69a3cbd9ed2cf0f348d90d45a8d350d98134cf1070bc106ee9ed90 AS world
 
 # star_sdk is a named context containing vendor/star-protocol at c237172f.
@@ -24,6 +26,7 @@ RUN python3.13 -m venv /opt/quantum-world \
 FROM python:3.13.18-slim-trixie@sha256:e48f59cdba69a3cbd9ed2cf0f348d90d45a8d350d98134cf1070bc106ee9ed90
 
 COPY --from=world /opt/quantum-world/ /opt/quantum-world/
+COPY --from=docker_cli /usr/local/bin/docker /usr/bin/docker
 # Keep Python 3.12's versioned files alongside the World Python 3.13.
 COPY --from=worker /usr/local/bin/python3.12 /usr/local/bin/python3.12
 COPY --from=worker /usr/local/lib/libpython3.12.so.1.0 /usr/local/lib/libpython3.12.so.1.0

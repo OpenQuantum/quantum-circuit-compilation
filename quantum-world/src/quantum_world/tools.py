@@ -17,11 +17,23 @@ def schema(properties, required=()):
 
 ID = {"type": "string", "minLength": 1, "maxLength": 100}
 TASK = {"type": "string", "enum": ["invsqrt", "dqi", "dfthcsos"]}
+RESEARCH_TOOLS = frozenset({"SearchResearchMethods", "GetResearchNode"})
 DEFINITIONS = [
     {
         "name": "GetTask",
-        "description": "Read quantum task constraints, reference costs and configured comparison score.",
+        "description": "Read task constraints, reference costs and configured comparison score. For invsqrt, also read the seed fingerprint and official reference source and cost formula.",
         "parameters": schema({"task": TASK}, ["task"]),
+    },
+    {
+        "name": "ReadInversqrtReference",
+        "description": (
+            "Read a bounded range of the verified official invsqrt reference generator source. "
+            "Use this read-only tool to inspect the algorithm and APIs before spending experiment budget."
+        ),
+        "parameters": schema({
+            "start_line": {"type": "integer", "minimum": 1, "maximum": 10000},
+            "lines": {"type": "integer", "minimum": 1, "maximum": 60},
+        }, ["start_line", "lines"]),
     },
     {
         "name": "SearchResearchMethods",
@@ -72,7 +84,7 @@ DEFINITIONS = [
     },
     {
         "name": "GetExperiment",
-        "description": "Read an owned experiment status, bounded report and log tail. A completed request does not mean the experiment passed.",
+        "description": "Read an owned experiment status, bounded report and log tail. Invsqrt runs include input, output and verifier provenance. A completed request does not mean the experiment passed.",
         "parameters": schema({"experiment_id": ID}, ["experiment_id"]),
     },
     {
