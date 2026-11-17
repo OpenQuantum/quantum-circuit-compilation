@@ -29,6 +29,8 @@ const { values: options } = parseArgs({ options: {
   'prior-attempt-experiment-id': { type: 'string', multiple: true },
   'continue-pending': { type: 'boolean', default: false },
   'confirm-full': { type: 'boolean', default: false },
+  'graph-guided': { type: 'boolean', default: false },
+  'remaining-quick': { type: 'string' },
   playwright: { type: 'string', default: 'playwright' },
   user: { type: 'string', default: 'local-user' },
   agent: { type: 'string', default: 'quantum-agent-local' },
@@ -235,7 +237,7 @@ async function observe(get, state, deadline) {
     assert.equal(new Set(actions.map(action => action.actionId)).size, actions.length, 'Repeated World action ID across Runs');
     for (const mode of Object.keys(BUDGET)) {
       const count = actions.filter(action => action.name === 'RunExperiment' && action.args.mode === mode).length;
-      assert.ok(count <= BUDGET[mode], `Agent exceeded ${mode} experiment budget`);
+      assert.ok(count <= (mode === 'quick' ? (identity.quickBudget ?? BUDGET.quick) : BUDGET.full), `Agent exceeded ${mode} experiment budget`);
     }
     if ((runs.every(run => RUN_TERMINAL.has(run.status))
       && experiments.every(row => EXPERIMENT_TERMINAL.has(row.status))) || Date.now() >= deadline) break;
@@ -291,9 +293,13 @@ async function main() {
   'Use a local Console origin as --base-url');
   assert.ok(Number.isFinite(timeout) && timeout > 0, 'Expected positive --timeout-seconds');
   const priorIds = options['prior-attempt-experiment-id'] ?? [];
-  const prompt = optimizationPrompt(baselineId, quickBaselineId, priorIds);
+  const graphGuided = options['graph-guided'];
+  const quickBudget = Number(options['remaining-quick'] ?? BUDGET.quick);
+  if (graphGuided && options['confirm-full']) assert.ok(quickBaselineId, 'Graph-guided full confirmation requires a comparable quick baseline');
+  const prompt = optimizationPrompt(baselineId, quickBaselineId, priorIds, { graphGuided, quickBudget });
   const identity = { baseUrl: base.origin, userId: options.user, agent: options.agent, world: options.world,
-    baselineId, quickBaselineId };
+    baselineId, quickBaselineId, ...(graphGuided ? { graphGuided: true } : {}),
+    ...(quickBudget !== BUDGET.quick ? { quickBudget } : {}) };
   const deadline = Date.now() + timeout;
   const ready = await fetch(`${base.origin}/health/ready`, { signal: AbortSignal.timeout(3500) }).catch(() => null);
   assert.ok(ready?.ok, `BFF not ready at ${base.origin}/health/ready`);
@@ -346,7 +352,8 @@ async function main() {
       quickBaseline = { row, log };
     }
     state = await readJson(stateFile);
-    assert.ok(!options['confirm-full'] || state?.attempts.length, 'Full confirmation requires an existing Agent run');
+    assert.ok(graphGuided || !options['confirm-full'] || state?.attempts.length,
+      'Full confirmation requires an existing Agent run');
     if (state) {
       assert.equal(state.version, 1);
       assert.deepEqual(state.identity, identity, 'State belongs to another Console or baseline');
@@ -423,7 +430,7 @@ if (options.help) {
     + ' [--baseline-quick-experiment-id ID] [--base-url URL] [--login-code-file FILE]'
     + ' [--prior-attempt-experiment-id ID]'
     + ' [--state-file FILE] [--playwright PATH] [--user ID] [--agent ID] [--world ID]'
-    + ' [--timeout-seconds N] [--continue-pending] [--confirm-full]');
+    + ' [--timeout-seconds N] [--continue-pending] [--confirm-full] [--graph-guided] [--remaining-quick N]');
 } else {
   try { await main(); }
   catch (error) {

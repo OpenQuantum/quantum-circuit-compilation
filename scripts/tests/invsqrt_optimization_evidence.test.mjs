@@ -228,3 +228,144 @@ test('accepts the optional quick baseline only with the same official build and 
   quick.provenance.validation.verifier_sha256 = sha('f');
   assert.throws(() => requireBaselineQuick(quick, baseline, identity), /validation/i);
 });
+
+const optimizedHash = '561687a62b2b562bf72477ef11cedee81e99199e15bf10347490d0258e47352a';
+
+function graphFixture(cost = 80) {
+  const item = fixture(cost);
+  const baselineCandidate = { id: 'cand-previous', entrypoint: 'invsqrt_gen.py', files: { 'invsqrt_gen.py': sha('a') } };
+  item.baseline.candidate_id = baselineCandidate.id;
+  item.baseline.provenance.input_kind = 'candidate';
+  item.baseline.provenance.candidate = baselineCandidate;
+  item.baseline.provenance.built_artifacts['invsqrt.kmb'] = optimizedHash;
+  item.baseline.provenance.verifier_report.circuit_sha256 = optimizedHash;
+  item.logs[item.baseline.id].circuit_sha256 = optimizedHash;
+  item.identity = { ...item.identity, graphGuided: true };
+  const node = { id: 'method-a', task: 'invsqrt', title: 'Narrow the accumulator', summary: 'Reduce the accumulator width.',
+    source: { type: 'public', url: 'https://example.test/method', version: '2' }, evidence: 'Accumulator width example' };
+  const result = { task: 'invsqrt', scope: 'public_and_official_only', read_only: true, nodes: [node] };
+  item.actions.unshift(
+    { name: 'SearchResearchMethods', args: { task: 'invsqrt' }, result: structuredClone(result), actionId: 'search-a', outcomeId: 'search-result' },
+    { name: 'GetResearchNode', args: { task: 'invsqrt', node_id: node.id }, result, actionId: 'detail-a', outcomeId: 'detail-result' },
+  );
+  const description = JSON.stringify({ method_node_id: node.id, based_on: 'prior optimized reference', changes: 'narrow the accumulator by one bit' });
+  item.candidates[0].description = description;
+  item.actions[2].args.description = description;
+  return item;
+}
+
+test('records research and baseline evidence for a graph-guided run against the optimized reference', () => {
+  const report = assessOptimization(graphFixture());
+  assert.equal(report.status, 'improved');
+  assert.equal(report.reductionPct, 20);
+  assert.equal(report.nextBaselineId, 'exp-full');
+  assert.equal(report.research[0].candidateId, 'cand-new');
+  assert.equal(report.research[0].node.id, 'method-a');
+  assert.equal(report.research[0].node.source.version, '2');
+  assert.equal(report.research[0].detail.outcomeId, 'detail-result');
+  assert.equal(report.research[0].changes, 'narrow the accumulator by one bit');
+});
+
+test('requires graph evidence linked to the created candidate and read before creation', () => {
+  const invalid = [
+    item => { item.actions[0].result.nodes[0].id = 'method-b'; },
+    item => { item.actions[1].result = null; },
+    item => { item.actions.splice(2, 0, item.actions.shift()); },
+    item => { item.candidates[0].description = '{}'; },
+    item => { item.actions[2].args.description = 'different from World record'; },
+  ];
+  for (const change of invalid) {
+    const item = graphFixture();
+    change(item);
+    assert.throws(() => assessOptimization(item), /research|method|candidate description/i);
+  }
+});
+
+test('preserves a verified result with no improvement and does not advance the baseline', () => {
+  const report = assessOptimization(graphFixture(100));
+  assert.equal(report.status, 'no_improvement');
+  assert.equal(report.research[0].node.id, 'method-a');
+  assert.equal(report.nextBaselineId, 'exp-baseline');
+});
+
+test('graph-guided baseline must be the prior optimized circuit with full verifier evidence', () => {
+  const wrongCircuit = graphFixture();
+  wrongCircuit.baseline.provenance.built_artifacts['invsqrt.kmb'] = OFFICIAL_SHA256;
+  assert.throws(() => assessOptimization(wrongCircuit), /optimized.*reference/i);
+  const wrongMode = graphFixture();
+  wrongMode.baseline.mode = 'quick';
+  assert.throws(() => assessOptimization(wrongMode), /baseline/i);
+});
+
+test('graph-guided prompt requests real lookup and candidate linkage without supplying a method', () => {
+  const prompt = optimizationPrompt('exp-baseline', undefined, [], { graphGuided: true });
+  assert.match(prompt, /SearchResearchMethods[\s\S]*GetResearchNode/);
+  assert.match(prompt, /method_node_id/);
+  assert.match(prompt, /product_bits=27/);
+  assert.doesNotMatch(prompt, /H14|delta_bits|result_bits/);
+});
+
+test('graph-guided quick baseline must match the selected full baseline artifact and candidate', () => {
+  const item = graphFixture();
+  const quick = record('exp-baseline-quick', 'quick', 'cand-previous', 90, optimizedHash);
+  quick.provenance = { ...structuredClone(item.baseline.provenance), validation: quick.provenance.validation,
+    verifier_report: { ...quick.provenance.verifier_report, circuit_sha256: optimizedHash } };
+  assert.equal(requireBaselineQuick(quick, item.baseline, item.identity).cost, 90);
+  quick.candidate_id = 'cand-other';
+  quick.provenance.candidate.id = 'cand-other';
+  assert.throws(() => requireBaselineQuick(quick, item.baseline, item.identity), /same.*candidate/i);
+});
+
+test('confirmed quick comparison can use the optimized baseline rather than the original sample', () => {
+  const item = graphFixture();
+  item.actions.pop();
+  const run = { status: 'succeeded', modelDecision: 'Select the tested candidate' };
+  const quickBaseline = { result: { diagnostic_cost: 90 }, provenance: item.baseline.provenance };
+  assert.equal(canConfirmFull(run, item.actions, item.experiments, quickBaseline), true);
+  item.experiments[0].provenance.built_artifacts = item.baseline.provenance.built_artifacts;
+  assert.equal(canConfirmFull(run, item.actions, item.experiments, quickBaseline), false);
+});
+
+test('graph-guided acceptance rejects the baseline circuit under a new candidate ID', () => {
+  const item = graphFixture();
+  for (const row of item.experiments) {
+    row.provenance.verifier_report.circuit_sha256 = optimizedHash;
+    item.logs[row.id].circuit_sha256 = optimizedHash;
+  }
+  item.actions.find(action => action.name === 'GetExperiment').result = structuredClone(item.experiments[0]);
+  assert.throws(() => assessOptimization(item), /same circuit|baseline circuit/i);
+});
+test('graph-guided retries include a bounded search and remaining quick allowance', () => {
+  const prompt = optimizationPrompt('exp-baseline', 'exp-quick-baseline', ['exp-tried'], {
+    graphGuided: true, quickBudget: 2,
+  });
+  assert.match(prompt, /短关键词/);
+  assert.match(prompt, /limit=2/);
+  assert.match(prompt, /最多 2 次 quick/);
+  assert.match(prompt, /exp-tried/);
+});
+test('retains truncated research lookups without treating previews as successful evidence', () => {
+  const saved = { runId: 'run-1', inputId: 'input-1', interactionId: 'chat-1' };
+  const run = {
+    runId: saved.runId, interactionSessionId: saved.interactionId, agentId: identity.agent,
+    worldId: identity.world, inputs: [{ inputId: saved.inputId }],
+    tools: [{
+      toolScope: 'world', toolName: 'SearchResearchMethods', status: 'succeeded', worldId: identity.world,
+      toolCallId: 'action-1', publicArguments: { task: 'invsqrt', userId: identity.userId },
+      publicResult: { truncated: true, preview: 'An incomplete result' },
+    }],
+  };
+  const [search] = readWorldActions(run, saved, { ...identity, graphGuided: true });
+  assert.equal(search.result, null);
+  assert.equal(search.outcomeTruncated, true);
+  run.tools[0].toolName = 'RunExperiment';
+  assert.throws(() => readWorldActions(run, saved, { ...identity, graphGuided: true }), /outcome/i);
+});
+test('records a structured field-by-field change summary in the World candidate', () => {
+  const item = graphFixture();
+  const candidate = item.candidates[0];
+  const changes = { delta_bits: '14 → 13', result_bits: '29 → 28' };
+  candidate.description = JSON.stringify({ ...JSON.parse(candidate.description), changes });
+  item.actions[2].args.description = candidate.description;
+  assert.deepEqual(assessOptimization(item).research[0].changes, changes);
+});

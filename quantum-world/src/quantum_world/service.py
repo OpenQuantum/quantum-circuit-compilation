@@ -1,6 +1,7 @@
 """Durable business service, independent of Hub transport and model providers."""
 
 import asyncio
+from datetime import datetime
 import json
 import math
 from pathlib import PurePosixPath
@@ -116,11 +117,36 @@ class World:
             elif name == "CreateCandidate":
                 data = self._candidate(owner, params)
             elif name == "RunExperiment":
-                if (
-                    sum(
-                        j["status"] in ("queued", "running")
-                        for _, j in self.store.list("experiment")
+                mode = params["mode"]
+                demo_start = self.settings.invsqrt_demo_started_at
+                demo_scope = demo_start.isoformat() if demo_start is not None else None
+                if demo_scope and (
+                    params["task"] != "invsqrt" or not params.get("candidate_id")
+                ):
+                    raise WorldError(
+                        "DEMO_SCOPE", "This demo accepts only invsqrt candidate experiments"
                     )
+                experiments = [job for _, job in self.store.list("experiment")]
+                if demo_start is not None:
+                    limit = 3 if mode == "quick" else 1
+                    # The stored scope still identifies attempts if the clock moves back.
+                    used = sum(
+                        job.get("task") == "invsqrt"
+                        and job.get("mode") == mode
+                        and bool(job.get("candidate_id"))
+                        and (
+                            job.get("invsqrt_demo_started_at") == demo_scope
+                            or datetime.fromisoformat(job["created_at"]) >= demo_start
+                        )
+                        for job in experiments
+                    )
+                    if used >= limit:
+                        raise WorldError(
+                            "DEMO_BUDGET_EXCEEDED",
+                            f"This demo allows at most {limit} {mode} attempts",
+                        )
+                if (
+                    sum(job["status"] in ("queued", "running") for job in experiments)
                     >= 8
                 ):
                     raise WorldError(
@@ -138,7 +164,7 @@ class World:
                 job = {
                     "id": identifier("exp"),
                     "task": params["task"],
-                    "mode": params["mode"],
+                    "mode": mode,
                     "candidate_id": candidate["id"] if candidate else None,
                     "status": "queued",
                     "created_at": now(),
@@ -146,6 +172,8 @@ class World:
                     "result": None,
                     "error": None,
                 }
+                if demo_scope:
+                    job["invsqrt_demo_started_at"] = demo_scope
                 self.store.put("experiment", owner, job)
                 schedule = (owner, job, candidate)
                 data = {

@@ -1,4 +1,5 @@
 import asyncio
+from dataclasses import replace
 from datetime import datetime, timedelta, timezone
 import json
 import os
@@ -148,6 +149,76 @@ class WorldTests(unittest.IsolatedAsyncioTestCase):
         self.assertFalse(self.world.workers)
         with self.assert_code("IDEMPOTENCY_CONFLICT"):
             await self.call("RunExperiment", {**params, "mode": "quick"}, "same-action")
+
+    async def test_invsqrt_demo_budget_preserves_history_and_limits_new_attempts_across_restart(self):
+        candidate = data(await self.call("CreateCandidate", {
+            "task": "invsqrt", "files": {"main.py": "pass"}, "entrypoint": "main.py",
+        }))
+        params = {"task": "invsqrt", "mode": "full", "candidate_id": candidate["candidate_id"]}
+        baseline = await self.experiment()
+        historical = data(await self.call("RunExperiment", params))
+        await self.world.workers[historical["experiment_id"]]
+        settings = replace(self.settings, invsqrt_demo_started_at=datetime.now(timezone.utc))
+        await self.world.close()
+        self.world = World(settings, self.runner)
+
+        before = data(await self.call("GetExperiment", {"experiment_id": baseline}))
+        self.assertEqual(before["status"], "succeeded")
+        with self.assert_code("DEMO_SCOPE"):
+            await self.call("RunExperiment", {"task": "invsqrt", "mode": "full"})
+        with self.assert_code("DEMO_SCOPE"):
+            await self.call("RunExperiment", {**params, "task": "dqi"})
+
+        quick = {**params, "mode": "quick"}
+        with patch("quantum_world.service.now", return_value="1999-01-01T00:00:00+00:00"):
+            results = await asyncio.gather(
+                *(self.call("RunExperiment", quick) for _ in range(4)),
+                return_exceptions=True,
+            )
+        accepted = [result for result in results if not isinstance(result, Exception)]
+        self.assertEqual(len(accepted), 3)
+        self.assertIsInstance(results[-1], WorldError)
+        self.assertEqual(results[-1].code, "DEMO_BUDGET_EXCEEDED")
+        await asyncio.gather(*self.world.workers.values())
+
+        with patch.object(self.runner, "run", side_effect=WorldError("UNIT_FAILURE", "test")):
+            full = await self.call("RunExperiment", params, "demo-full")
+            full_id = data(full)["experiment_id"]
+            await self.world.workers[full_id]
+        self.assertEqual(data(await self.call("GetExperiment", {"experiment_id": full_id}))["status"], "failed")
+
+        await self.world.close()
+        self.world = World(settings, self.runner)
+        self.assertEqual(await self.call("RunExperiment", params, "demo-full"), full)
+        other = data(await self.call("CreateCandidate", {
+            "task": "invsqrt", "files": {"main.py": "pass"}, "entrypoint": "main.py",
+        }, user="other-user"))
+        for mode in ("quick", "full"):
+            with self.subTest(mode=mode), self.assert_code("DEMO_BUDGET_EXCEEDED"):
+                await self.call("RunExperiment", {**params, "mode": mode, "candidate_id": other["candidate_id"]}, user="other-user")
+        self.assertEqual(len(self.world.store.list("experiment")), 6)
+
+    async def test_invsqrt_demo_settings_load_fixed_utc_start_and_reject_invalid_opt_in(self):
+        config = self.root / "demo.toml"
+        base = (
+            'project_root = "."\ndata_root = "state"\n'
+            'worker_python = "python"\nseed_path = "."\n'
+        )
+        config.write_text(base)
+        self.assertIsNone(Settings.load(config).invsqrt_demo_started_at)
+
+        config.write_text(base + '\n[invsqrt_demo]\nstarted_at = "2000-01-01T00:00:00Z"\n')
+        self.assertEqual(Settings.load(config).invsqrt_demo_started_at, datetime(2000, 1, 1, tzinfo=timezone.utc))
+
+        for section in (
+            "[invsqrt_demo]\n",
+            '[invsqrt_demo]\nstarted_at = "2000-01-01T00:00:00"\n',
+            '[invsqrt_demo]\nstarted_at = "2000-01-01T00:00:00+08:00"\n',
+            '[invsqrt_demo]\nstarted_at = "9999-01-01T00:00:00Z"\n',
+        ):
+            with self.subTest(section=section), self.assertRaisesRegex(ValueError, "invsqrt_demo"):
+                config.write_text(base + "\n" + section)
+                Settings.load(config)
 
     async def test_owner_isolation(self):
         job_id = await self.experiment()

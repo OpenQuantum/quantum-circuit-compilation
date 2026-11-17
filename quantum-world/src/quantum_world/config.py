@@ -1,4 +1,5 @@
 from dataclasses import dataclass, field
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from urllib.parse import urlsplit
 import math
@@ -22,6 +23,7 @@ class Settings:
     allowed_agents: dict[str, list[str]] = field(default_factory=dict)
     research_url: str | None = None
     research_token: str | None = field(default=None, repr=False)
+    invsqrt_demo_started_at: datetime | None = None
 
     def __post_init__(self):
         if self.research_url:
@@ -43,6 +45,13 @@ class Settings:
                 raise ValueError(f"{name} must be a positive integer")
         if not math.isfinite(self.current_best) or self.current_best < 0:
             raise ValueError("current_best must be finite and nonnegative")
+        demo_start = self.invsqrt_demo_started_at
+        if demo_start is not None and (
+            not isinstance(demo_start, datetime)
+            or demo_start.utcoffset() != timedelta(0)
+            or demo_start > datetime.now(timezone.utc)
+        ):
+            raise ValueError("invsqrt_demo.started_at must be a non-future UTC timestamp")
         if not isinstance(self.allowed_agents, dict) or any(
             not isinstance(agent, str)
             or not agent
@@ -74,6 +83,17 @@ class Settings:
         data = tomllib.loads(path.read_text())
         hub = data.pop("hub", {})
         research = data.pop("research", {})
+        demo = data.pop("invsqrt_demo", None)
+        demo_start = None
+        if demo is not None:
+            if not isinstance(demo, dict) or set(demo) != {"started_at"}:
+                raise ValueError("invsqrt_demo requires only started_at")
+            demo_start = demo["started_at"]
+            if isinstance(demo_start, str):
+                try:
+                    demo_start = datetime.fromisoformat(demo_start)
+                except ValueError:
+                    raise ValueError("Invalid invsqrt_demo.started_at timestamp") from None
         for name in ("project_root", "data_root", "worker_python", "seed_path"):
             data[name] = path.parent / data[name]
         return cls(
@@ -83,4 +103,5 @@ class Settings:
             allowed_agents=hub.get("allowed_agents", {}),
             research_url=research.get("url"),
             research_token=os.environ.get("QUANTUM_RESEARCH_TOKEN"),
+            invsqrt_demo_started_at=demo_start,
         )
