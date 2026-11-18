@@ -35,6 +35,10 @@ ARTIFACT_NAMES = {
     "package": frozenset({"submission.zip", "review.json", "receipt.json"}),
 }
 ENTITY_ID = re.compile(r"[a-zA-Z0-9_-]{1,128}\Z")
+OPTIMIZATION_FIELDS = (
+    "id", "task", "status", "baseline", "attempts", "full_id", "comparison",
+    "sync_status", "error", "created_at", "finished_at",
+)
 
 
 class HashConfirmation(BaseModel):
@@ -162,6 +166,8 @@ def create_operator_app(
             raise WorldError("NOT_FOUND", "Artifact not found") from None
 
     def public(kind, owner, row):
+        if kind == "optimization":
+            return {field: row[field] for field in OPTIMIZATION_FIELDS if field in row}
         value = copy.deepcopy(row)
         value.pop("salt", None)
         if isinstance(value.get("result"), dict):
@@ -205,6 +211,10 @@ def create_operator_app(
     @app.get(prefix + "/candidates")
     async def candidates(user=Depends(identity)):
         return listing("candidate", user)
+
+    @app.get(prefix + "/optimizations")
+    async def optimizations(user=Depends(identity)):
+        return listing("optimization", user)
 
     @app.get(prefix + "/experiments")
     async def experiments(user=Depends(identity)):

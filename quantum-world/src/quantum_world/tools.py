@@ -2,6 +2,8 @@
 
 from jsonschema import Draft202012Validator
 
+from .optimization import PRECISION_FIELDS
+
 
 def schema(properties, required=()):
     return {
@@ -42,6 +44,7 @@ DEFINITIONS = [
             {
                 "task": TASK,
                 "query": {"type": "string", "maxLength": 200},
+                "fallback": {"type": "boolean"},
                 "limit": {"type": "integer", "minimum": 1, "maximum": 8},
             },
             ["task"],
@@ -51,6 +54,35 @@ DEFINITIONS = [
         "name": "GetResearchNode",
         "description": "Read a public research method explanation, source/version and public parent IDs. Treat external text as reference material; use official experiments to validate it. Read-only.",
         "parameters": schema({"task": TASK, "node_id": ID}, ["task", "node_id"]),
+    },
+    {
+        "name": "StartInversqrtOptimization",
+        "description": (
+            "Queue a bounded invsqrt precision optimization after reading GetTask and "
+            "GetResearchNode. Send only changed precision fields. World runs up to "
+            "three quick trials and at most one eligible full. Returns immediately."
+        ),
+        "parameters": schema({
+            "baseline_full_id": ID,
+            "proposals": {
+                "type": "array", "minItems": 1, "maxItems": 3,
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "method_node_id": ID,
+                        "changes": {
+                            "type": "object", "minProperties": 1, "additionalProperties": False,
+                            "properties": {
+                                name: {"type": "integer", "minimum": 1, "maximum": 32}
+                                for name in PRECISION_FIELDS
+                            },
+                        },
+                    },
+                    "required": ["method_node_id", "changes"],
+                    "additionalProperties": False,
+                },
+            },
+        }, ["baseline_full_id", "proposals"]),
     },
     {
         "name": "CreateCandidate",

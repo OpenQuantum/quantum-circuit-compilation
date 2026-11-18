@@ -1,9 +1,9 @@
-import {ACTIVE, TASKS, STATUS, escapeHTML as esc, score, bytes, timestamp, badge, approvalAllowed, submissionAllowed, artifactURL, errorMessage, orderedMessages, captureChatContext, chatContextMatches} from './model.js';
+import {ACTIVE, TASKS, STATUS, escapeHTML as esc, score, bytes, timestamp, badge, approvalAllowed, submissionAllowed, artifactURL, errorMessage, orderedMessages, captureChatContext, chatContextMatches, optimizationCards} from './model.js';
 
 const $ = id => document.getElementById(id);
 const H = '/api/human/v1';
 const Q = '/api/quantum/v1';
-const state = {user: null, csrf: '', summary: null, view: 'experiments', lists: {experiments: [], candidates: [], packages: []}, selected: null, detail: null, interaction: null, run: null, conversations: [], conversationCursor: null, agents: [], generation: 0, refreshing: false, sending: false, pendingInput: null, timer: null, chatTimer: null, chatRefreshing: false, chatVersion: 0, logName: 'verify.stdout', logOffset: 0, logText: '', logLoaded: false, dialogPackage: null, uncertainSubmissions: new Set(), approving: false, submitting: false};
+const state = {user: null, csrf: '', summary: null, view: 'experiments', lists: {experiments: [], candidates: [], packages: []}, optimizations: [], optimizationError: '', selected: null, detail: null, interaction: null, run: null, conversations: [], conversationCursor: null, agents: [], generation: 0, refreshing: false, sending: false, pendingInput: null, timer: null, chatTimer: null, chatRefreshing: false, chatVersion: 0, logName: 'verify.stdout', logOffset: 0, logText: '', logLoaded: false, dialogPackage: null, uncertainSubmissions: new Set(), approving: false, submitting: false};
 const viewText = {experiments: ['实验记录', '从候选电路到独立验证，跟踪每一步结果。', '全部实验'], candidates: ['候选电路', '查看 Agent 创建的不可变源码快照与实验关联。', '全部候选'], packages: ['提交审核', '检查本地验证结果，批准并提交确定的文件。', '全部提交包']};
 let authConfig = null;
 
@@ -31,6 +31,7 @@ function resetSession(message = '') {
   state.user = null; state.csrf = ''; state.interaction = null; state.run = null; state.pendingInput = null;
   state.summary = null; state.selected = null; state.detail = null; state.conversations = []; state.conversationCursor = null; state.agents = [];
   state.lists = {experiments: [], candidates: [], packages: []};
+  state.optimizations = []; state.optimizationError = '';
   state.dialogPackage = null; state.uncertainSubmissions.clear(); state.refreshing = false; state.chatRefreshing = false;
   $('approval-dialog').close(); $('submit-dialog').close();
   $('workspace').hidden = true; $('login-view').hidden = false; $('logout').hidden = true;
@@ -83,6 +84,7 @@ function renderMetrics() {
 }
 function renderRecords(loaded = true) {
   const view = state.view, task = $('task-filter').value;
+  renderOptimizations(view, task);
   const items = state.lists[view].filter(item => task === 'all' || item.task === task);
   $('record-count').textContent = loaded ? `${items.length} 条记录` : '等待数据';
   if (!items.length) {
@@ -98,6 +100,14 @@ function renderRecords(loaded = true) {
     const rest = view === 'experiments' ? `<td>${badge(item.status)}</td><td>${item.mode === 'full' ? '完整验证' : '快速诊断'}</td><td class="mono">${score(item.result?.task_cost)}${item.mode !== 'full' ? '<span class="record-sub">不可用于提交</span>' : ''}</td>` : view === 'candidates' ? `<td class="mono">${esc(item.entrypoint)}</td><td>${Object.keys(item.files || {}).length}</td>` : `<td>${badge(item.status)}</td><td class="mono">${score(item.local_score)}</td><td>${bytes(item.bytes)}</td>`;
     return `<tr class="${state.selected === item.id ? 'selected' : ''}">${first}${rest}<td>${timestamp(item.created_at)}</td></tr>`;
   }).join('')}</tbody></table></div>`;
+}
+function renderOptimizations(view, task) {
+  const visible = view === 'experiments' && ['all', 'invsqrt'].includes(task);
+  $('optimization-panel').hidden = !visible || !(state.optimizations.length || state.optimizationError);
+  if ($('optimization-panel').hidden) return;
+  showMessage('optimization-error', state.optimizationError);
+  const runs = $('optimization-runs'), markup = optimizationCards(state.optimizations);
+  if (runs.innerHTML !== markup) runs.innerHTML = markup;
 }
 function field(label, value) { return `<div><span class="field-label">${esc(label)}</span><span class="field-value">${esc(value ?? '—')}</span></div>`; }
 function artifactsHTML(artifacts = []) {
@@ -152,10 +162,17 @@ async function refresh() {
   const generation = state.generation;
   clearTimeout(state.timer); state.refreshing = true; $('refresh').disabled = true;
   try {
-    const results = await Promise.all([api(`${Q}/summary`), ...['experiments', 'candidates', 'packages'].map(type => api(`${Q}/${type}`))]);
+    const types = ['experiments', 'candidates', 'packages'];
+    const [results, optimization] = await Promise.all([
+      Promise.all([api(`${Q}/summary`), ...types.map(type => api(`${Q}/${type}`))]),
+      api(`${Q}/optimizations`).catch(error => ({error})),
+    ]);
     if (generation !== state.generation) return;
     state.summary = results[0];
-    ['experiments', 'candidates', 'packages'].forEach((type, i) => { state.lists[type] = results[i + 1].items || []; });
+    types.forEach((type, i) => { state.lists[type] = results[i + 1].items || []; });
+    const missing = optimization.error?.status === 404;
+    if (!optimization.error || missing) state.optimizations = optimization.items || [];
+    state.optimizationError = missing ? '' : optimization.error?.message || '';
     renderMetrics(); renderRecords(); showMessage('world-error', '');
     $('refresh-status').textContent = `已同步 ${new Date().toLocaleTimeString('zh-CN', {hour12: false})}`;
     if (state.selected) {
@@ -179,7 +196,6 @@ async function selectRecord(id) {
   state.selected = id; state.detail = state.lists[state.view].find(item => item.id === id) || null;
   state.logOffset = 0; state.logText = ''; state.logLoaded = false;
   renderRecords(); renderDetail();
-  if (!state.detail) return;
   const view = state.view, generation = state.generation;
   if (view !== 'candidates') {
     try { const record = await api(`${Q}/${view}/${encodeURIComponent(id)}`); if (state.selected === id && state.view === view && generation === state.generation) { state.detail = record; renderDetail(); } }
@@ -191,6 +207,15 @@ document.querySelectorAll('[data-view]').forEach(button => button.addEventListen
 $('refresh').addEventListener('click', refresh);
 $('task-filter').addEventListener('change', () => renderRecords(!!state.summary));
 $('records').addEventListener('click', event => { const item = event.target.closest('[data-select]'); if (item) selectRecord(item.dataset.select); const prompt = event.target.closest('[data-prompt]'); if (prompt) fillPrompt(prompt.dataset.prompt); });
+$('optimization-runs').addEventListener('click', async event => {
+  const experiment = event.target.closest('[data-open-experiment]');
+  if (!experiment) return;
+  const id = experiment.dataset.openExperiment;
+  await selectRecord(id);
+  if (state.view === 'experiments' && state.detail?.id === id) {
+    $('detail').scrollIntoView({block: 'nearest'});
+  }
+});
 $('detail').addEventListener('change', event => { if (event.target.id === 'log-name') { state.logName = event.target.value; state.logOffset = 0; state.logText = ''; state.logLoaded = false; renderLog(); updateLog(); } });
 $('detail').addEventListener('click', async event => {
   if (event.target.closest('[data-close-detail]')) { state.selected = null; state.detail = null; renderRecords(); renderDetail(); }

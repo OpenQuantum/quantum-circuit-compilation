@@ -26,6 +26,8 @@ async def run(args):
     )
     try:
         if args.command == "serve":
+            if settings.invsqrt_optimization is not None:
+                world.optimizations.ensure_sync_worker()
             endpoint = None
             server = None
             server_task = None

@@ -102,6 +102,27 @@ async def test_static_console_and_session_scope(console):
     assert gateway.uploads == 0
 
 
+async def test_optimization_progress_uses_browser_session_not_supplied_user(console):
+    client, world, gateway, _ = console
+    row = {
+        "id": "opt-alice", "task": "invsqrt", "status": "full", "full_id": "exp-alice",
+        "baseline": {"full_id": "exp-base", "task_cost": 200.0},
+        "attempts": [{"candidate_id": "cand-example", "quick_id": "exp-quick"}],
+        "created_at": "2026-11-18T01:00:00Z",
+    }
+    world.store.put("optimization", canonical(["real-agent", "alice"]), row)
+    url = API + "/optimizations"
+    assert (await client.get(url)).status_code == 401
+    await login(client)
+    response = await client.get(url)
+    assert response.status_code == 200
+    assert response.json() == {"items": [row]}
+    assert response.headers["cache-control"] == "private, no-store"
+    await login(client, "bob")
+    assert (await client.get(url, headers={"X-Quantum-User": "alice"})).json() == {"items": []}
+    assert gateway.uploads == 0
+
+
 async def test_csrf_hash_review_and_separate_submit(console):
     client, world, gateway, sha = console
     await login(client)

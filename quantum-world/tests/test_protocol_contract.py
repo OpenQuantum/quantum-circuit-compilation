@@ -42,7 +42,7 @@ class ProtocolContractTests(unittest.IsolatedAsyncioTestCase):
         envelope = self.endpoint.send.call_args.args[0]
         validate_compact_content('specification', envelope.payload.content)
         self.assertEqual(envelope.payload.content['tools'], [
-            d for d in DEFINITIONS if d['name'] not in {'SearchResearchMethods', 'GetResearchNode'}
+            d for d in DEFINITIONS if d['name'] not in {'SearchResearchMethods', 'GetResearchNode', 'StartInversqrtOptimization'}
         ])
         self.assertNotIn('SubmitSubmission', {d['name'] for d in envelope.payload.content['tools']})
 
@@ -56,10 +56,28 @@ class ProtocolContractTests(unittest.IsolatedAsyncioTestCase):
                 endpoint.send = AsyncMock()
                 await endpoint.send_specification('external-agent')
                 tools = endpoint.send.call_args.args[0].payload.content['tools']
-                expected = DEFINITIONS if token else [
-                    d for d in DEFINITIONS if d['name'] not in {'SearchResearchMethods', 'GetResearchNode'}
-                ]
-                self.assertEqual(tools, expected)
+                hidden = {'StartInversqrtOptimization'}
+                if not token:
+                    hidden.update({'SearchResearchMethods', 'GetResearchNode'})
+                self.assertEqual(tools, [d for d in DEFINITIONS if d['name'] not in hidden])
+
+    async def test_invsqrt_optimization_advertised_only_with_graph_and_baseline_config(self):
+        config = {
+            'baseline_full_id': 'exp-full', 'baseline_quick_id': 'exp-quick',
+            'baseline_parameters': dict(delta_bits=13, coef_bits=17, square_bits=28,
+                                        product_bits=27, result_bits=28),
+        }
+        for token in (None, 'unit-test-token'):
+            with self.subTest(token_configured=bool(token)):
+                self.world.settings = replace(
+                    self.world.settings, research_url='http://127.0.0.1:8765', research_token=token,
+                    invsqrt_optimization=config,
+                )
+                endpoint = QuantumEnvironment(self.world)
+                endpoint.send = AsyncMock()
+                await endpoint.send_specification('external-agent')
+                tools = endpoint.send.call_args.args[0].payload.content['tools']
+                self.assertEqual('StartInversqrtOptimization' in {d['name'] for d in tools}, bool(token))
 
     async def test_build_submission_advertises_one_successful_full_per_benchmark(self):
         self.endpoint.send = AsyncMock()
