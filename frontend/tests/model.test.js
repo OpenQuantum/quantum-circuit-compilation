@@ -40,6 +40,37 @@ test('real BFF and World error formats yield actionable messages', () => {
 test('missing scores are not rendered as a zero or a leaderboard result', () => {
   assert.equal(score(null), '—'); assert.equal(score(undefined), '—'); assert.equal(score(NaN), '—'); assert.equal(score(0), '0');
 });
+test('optimization progress renders baseline, quick and full links with the verified comparison', async () => {
+  const {optimizationCards} = await import('../model.js');
+  const markup = optimizationCards([{
+    id: 'opt-test', task: 'invsqrt', status: 'succeeded',
+    baseline: {full_id: 'exp-base', quick_id: 'exp-base-quick', task_cost: 200},
+    attempts: [{candidate_id: 'cand-test', quick_id: 'exp-quick', method_node_id: 'method-test'}],
+    full_id: 'exp-full', comparison: {baseline_cost: 200, task_cost: 180, reduction_pct: 10, improved: true},
+    sync_status: 'synced',
+  }]);
+  for (const id of ['exp-base', 'exp-base-quick', 'exp-quick', 'exp-full']) {
+    assert.ok(markup.includes(`data-open-experiment="${id}"`), id);
+  }
+  assert.match(markup, /200.*180/);
+  assert.match(markup, /10%/);
+  assert.match(markup, /已写回图谱/);
+  assert.match(markup, /method-test/);
+});
+
+test('pending and failed optimizations show actual progress without inventing verified results', async () => {
+  const {optimizationCards} = await import('../model.js');
+  const pending = optimizationCards([{id: 'opt-test', status: 'quick', sync_status: 'pending'}]);
+  assert.match(pending, /快速验证/);
+  assert.match(pending, /待写回图谱/);
+  assert.doesNotMatch(pending, /成本下降|%|data-open-experiment/);
+  const failed = optimizationCards([{
+    id: 'opt-failed', status: 'failed', error: {message: '<img src=x onerror=alert(1)>'},
+  }]);
+  assert.match(failed, /&lt;img/);
+  assert.doesNotMatch(failed, /<img/);
+});
+
 test('late run response cannot attach an old run to a newly selected conversation', async () => {
   const state = {generation: 1, chatVersion: 5, interaction: {interactionSessionId: 'A'}, run: null};
   const context = captureChatContext(state);

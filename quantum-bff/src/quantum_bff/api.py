@@ -41,6 +41,11 @@ async def candidates(request: Request, user=Depends(current_user)):
     return await client(request).request(user, "GET", "/candidates")
 
 
+@router.get("/optimizations")
+async def optimizations(request: Request, user=Depends(current_user)):
+    return await client(request).request(user, "GET", "/optimizations")
+
+
 @router.get("/experiments")
 async def experiments(request: Request, user=Depends(current_user)):
     return await client(request).request(user, "GET", "/experiments")

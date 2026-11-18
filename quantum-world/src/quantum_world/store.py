@@ -77,6 +77,25 @@ class Store:
         ).fetchone()
         return (row[0], json.loads(row[1])) if row else None
 
+    def research_node(self, owner, node_id):
+        row = self.db.execute(
+            """
+            SELECT outcome FROM actions
+            WHERE owner=? AND json_extract(request,'$.name')='GetResearchNode'
+              AND json_extract(request,'$.params.task')='invsqrt'
+              AND json_extract(request,'$.params.node_id')=?
+            ORDER BY rowid DESC LIMIT 1
+            """,
+            (owner, node_id),
+        ).fetchone()
+        if row is not None:
+            data = json.loads(json.loads(row[0])["data"]["text"])
+            return next(
+                (node for node in data.get("nodes", []) if node.get("id") == node_id),
+                None,
+            )
+        return None
+
     def save_action(self, owner, action_id, request, outcome):
         self.db.execute(
             "INSERT INTO actions VALUES(?,?,?,?)",

@@ -10,9 +10,12 @@ class QuantumEnvironment(EnvironmentClient):
     def __init__(self, world):
         super().__init__(world.settings.world_id)
         self.world = world
-        tools = DEFINITIONS
-        if not (world.settings.research_url and world.settings.research_token):
-            tools = [definition for definition in DEFINITIONS if definition["name"] not in RESEARCH_TOOLS]
+        settings = world.settings
+        research_enabled = bool(settings.research_url and settings.research_token)
+        hidden = set() if research_enabled else set(RESEARCH_TOOLS)
+        if settings.invsqrt_optimization is None or not research_enabled:
+            hidden.add("StartInversqrtOptimization")
+        tools = [definition for definition in DEFINITIONS if definition["name"] not in hidden]
         self.configure_capabilities(tools=tools, events=[])
 
     async def on_action(self, sender, content):

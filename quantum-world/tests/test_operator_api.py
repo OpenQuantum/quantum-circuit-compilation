@@ -119,6 +119,34 @@ class OperatorAPITests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(summary["experiments_by_status"], {"succeeded": 2})
         self.assertEqual(summary["counts"]["active_experiments"], 0)
 
+    async def test_optimization_progress_is_scoped_to_assigned_agents_and_user(self):
+        row = {
+            "task": "invsqrt", "status": "succeeded",
+            "baseline": {"full_id": "exp-base", "task_cost": 200.0},
+            "attempts": [{"candidate_id": "cand-example", "quick_id": "exp-quick"}],
+            "full_id": "exp-full", "comparison": {"task_cost": 180.0, "improved": True},
+            "sync_status": "synced", "created_at": "2026-11-18T01:00:00Z",
+        }
+        for agent, user, ident in (
+            ("agent-a", "user", "opt-visible"),
+            ("agent-b", "user", "opt-also-visible"),
+            ("agent-a", "other", "opt-other-user"),
+            ("revoked-agent", "user", "opt-revoked"),
+        ):
+            self.world.store.put("optimization", canonical([agent, user]),
+                                 {**row, "id": ident, "private_state": "internal"})
+        url = "/operator/v1/optimizations"
+        self.assertEqual((await self.client.get(url, headers={"Authorization": "Bearer invalid"})).status_code, 401)
+        self.assertEqual((await self.client.get(url, headers={"X-Quantum-User": "unassigned"})).status_code, 403)
+        app = create_operator_app(self.world, token=TOKEN, operator_users=(), gateway=self.gateway)
+        async with self.make_client(app) as client:
+            response = await client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["items"], [
+            {**row, "id": "opt-visible"}, {**row, "id": "opt-also-visible"},
+        ])
+        self.assertIn("no-store", response.headers["cache-control"])
+
     async def test_user_without_submission_permission_can_read_quick_result_and_log(self):
         ident = await self.experiment(mode="quick")
         app = create_operator_app(self.world, token=TOKEN, operator_users=(), gateway=self.gateway)

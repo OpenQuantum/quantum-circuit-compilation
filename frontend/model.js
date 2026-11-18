@@ -4,6 +4,7 @@ export const STATUS = {
   awaiting_approval: '待人工审核', approved: '已批准', submitting: '提交中',
   submitted: '已提交', unknown: '结果待核对', waiting: '等待中', paused: '已暂停',
   completed: '已完成', rejected: '已拒绝', pending: '等待中', streaming: '回复中',
+  quick: '快速验证', full: '完整验证', no_improvement: '未达改进',
 };
 export const TASKS = {invsqrt: 'Inverse Square Root', dqi: 'DQI', dfthcsos: 'DF-THC SOS'};
 export const ACTIVE = new Set(['queued', 'running', 'waiting', 'paused', 'cancelling', 'submitting']);
@@ -15,9 +16,44 @@ export function timestamp(value) {
   return value && !Number.isNaN(date.getTime()) ? date.toLocaleString('zh-CN', {month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit'}) : '—';
 }
 export function badge(value) {
-  const tone = ['succeeded', 'completed', 'approved', 'submitted'].includes(value) ? 'success' : ['running', 'streaming', 'submitting'].includes(value) ? 'live' : ['failed', 'rejected', 'unknown', 'interrupted'].includes(value) ? 'danger' : value === 'awaiting_approval' ? 'warning' : 'neutral';
+  const tone = ['succeeded', 'completed', 'approved', 'submitted'].includes(value) ? 'success' : ['running', 'streaming', 'submitting', 'quick', 'full'].includes(value) ? 'live' : ['failed', 'rejected', 'unknown', 'interrupted'].includes(value) ? 'danger' : value === 'awaiting_approval' ? 'warning' : 'neutral';
   return `<span class="badge ${tone}"><i aria-hidden="true"></i>${escapeHTML(STATUS[value] || value || '未知')}</span>`;
 }
+function experimentReference(label, id, description) {
+  if (!id) return '';
+  const detail = description ? ` <span class="muted">${escapeHTML(description)}</span>` : '';
+  return `<li>${escapeHTML(label)} <button type="button" class="text-button mono" data-open-experiment="${escapeHTML(id)}">${escapeHTML(id)} ↗</button>${detail}</li>`;
+}
+
+export function optimizationCards(items) {
+  return items.map(item => {
+    const baseline = item.baseline;
+    const comparison = item.comparison;
+    const comparable = Number.isFinite(comparison?.task_cost) && Number.isFinite(comparison?.baseline_cost);
+    const change = Number.isFinite(comparison?.reduction_pct)
+      ? (comparison.improved ? ` · 成本下降 ${score(comparison.reduction_pct)}%` : ' · 成本未下降')
+      : '';
+    const costs = comparable
+      ? `成本 ${score(comparison.baseline_cost)} → ${score(comparison.task_cost)}${change}`
+      : Number.isFinite(baseline?.task_cost) ? `基准成本 ${score(baseline.task_cost)}` : '';
+    const sync = {pending: '待写回图谱', synced: '已写回图谱'}[item.sync_status];
+    const attempts = (item.attempts || []).map((attempt, index) => experimentReference(
+      `候选快速验证 ${index + 1}`, attempt.quick_id,
+      attempt.method_node_id ? `方法 ${attempt.method_node_id}` : '',
+    )).join('');
+    const links = experimentReference('基准完整验证', baseline?.full_id)
+      + experimentReference('基准快速验证', baseline?.quick_id)
+      + attempts + experimentReference('候选完整验证', item.full_id);
+    const error = typeof item.error === 'string' ? item.error : item.error?.message || item.error?.code;
+    return `<article class="record-panel optimization-run">
+      <div class="optimization-heading"><code class="record-id">${escapeHTML(item.id)}</code>${badge(item.status)}</div>
+      ${costs ? `<p>${costs}</p>` : ''}${sync ? `<p class="muted">${sync}</p>` : ''}
+      ${links ? `<ul class="artifacts">${links}</ul>` : ''}
+      ${error ? `<p class="error-text">${escapeHTML(error)}</p>` : ''}
+    </article>`;
+  }).join('');
+}
+
 export function approvalAllowed(summary, pkg) {
   return summary?.can_approve === true && !summary?.read_only && pkg?.status === 'awaiting_approval' && /^[a-f0-9]{64}$/i.test(pkg.sha256 || '');
 }

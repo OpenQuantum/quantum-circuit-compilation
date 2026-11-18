@@ -24,8 +24,24 @@ class Settings:
     research_url: str | None = None
     research_token: str | None = field(default=None, repr=False)
     invsqrt_demo_started_at: datetime | None = None
+    invsqrt_optimization: dict | None = None
+    research_results_token: str | None = field(default=None, repr=False)
 
     def __post_init__(self):
+        optimization = self.invsqrt_optimization
+        if optimization is not None:
+            from .optimization import precision_key
+
+            ids = ("baseline_full_id", "baseline_quick_id")
+            if (
+                not isinstance(optimization, dict)
+                or set(optimization) != {*ids, "baseline_parameters"}
+                or any(not isinstance(optimization[key], str) or not 1 <= len(optimization[key]) <= 100
+                       for key in ids)
+                or optimization[ids[0]] == optimization[ids[1]]
+                or not precision_key(optimization["baseline_parameters"])
+            ):
+                raise ValueError("invsqrt_optimization requires distinct full/quick IDs and five valid precision values")
         if self.research_url:
             url = urlsplit(self.research_url)
             if (
@@ -96,6 +112,7 @@ class Settings:
                     raise ValueError("Invalid invsqrt_demo.started_at timestamp") from None
         for name in ("project_root", "data_root", "worker_python", "seed_path"):
             data[name] = path.parent / data[name]
+        optimization = data.pop("invsqrt_optimization", None)
         return cls(
             **data,
             hub_url=hub.get("url", "ws://127.0.0.1:8000"),
@@ -104,4 +121,6 @@ class Settings:
             research_url=research.get("url"),
             research_token=os.environ.get("QUANTUM_RESEARCH_TOKEN"),
             invsqrt_demo_started_at=demo_start,
+            research_results_token=os.environ.get("QUANTUM_RESEARCH_RESULTS_TOKEN"),
+            invsqrt_optimization=optimization,
         )

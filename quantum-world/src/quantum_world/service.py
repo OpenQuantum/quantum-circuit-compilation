@@ -13,6 +13,7 @@ from .store import Store, WorldError, canonical, identifier, now
 from .tools import RESEARCH_TOOLS, VALIDATORS
 from .research import ResearchClient
 from .invsqrt import read_reference, task_context
+from .optimization import InversqrtOptimization
 
 REFERENCE = {
     "invsqrt": 2076774.233715282,
@@ -43,6 +44,9 @@ class World:
         self.research = ResearchClient(settings)
         self.workers = {}
         self.capacity = asyncio.Semaphore(1)
+        self.optimizations = InversqrtOptimization(self)
+        if not administrative:
+            self.optimizations.recover()
 
     def owner(self, sender, params):
         if params.get("userId") not in self.settings.allowed_agents.get(sender, []):
@@ -70,6 +74,7 @@ class World:
             )
         request = canonical({"name": name, "params": params})
         schedule = None
+        optimization = None
         cancel = None
         # External I/O is outside SQLite transactions and the event loop.
         # Replays return the saved observation instead of refetching changing data.
@@ -80,6 +85,8 @@ class World:
             research_data = await asyncio.to_thread(self.research.query, name, params)
         elif name == "GetTask" and params["task"] == "invsqrt" and not self.store.action(owner, action_id):
             invsqrt_context = await asyncio.to_thread(task_context, self.settings)
+            if self.settings.invsqrt_optimization is not None:
+                invsqrt_context.update(await self.optimizations.context(owner))
         elif name == "ReadInversqrtReference" and not self.store.action(owner, action_id):
             reference_section = await asyncio.to_thread(
                 read_reference, self.settings.project_root, params["start_line"], params["lines"]
@@ -114,67 +121,13 @@ class World:
                 }
                 if invsqrt_context:
                     data.update(invsqrt_context)
+            elif name == "StartInversqrtOptimization":
+                optimization = self.optimizations.prepare(owner, params)
+                data = {"optimization_id": optimization["id"], "status": "queued"}
             elif name == "CreateCandidate":
                 data = self._candidate(owner, params)
             elif name == "RunExperiment":
-                mode = params["mode"]
-                demo_start = self.settings.invsqrt_demo_started_at
-                demo_scope = demo_start.isoformat() if demo_start is not None else None
-                if demo_scope and (
-                    params["task"] != "invsqrt" or not params.get("candidate_id")
-                ):
-                    raise WorldError(
-                        "DEMO_SCOPE", "This demo accepts only invsqrt candidate experiments"
-                    )
-                experiments = [job for _, job in self.store.list("experiment")]
-                if demo_start is not None:
-                    limit = 3 if mode == "quick" else 1
-                    # The stored scope still identifies attempts if the clock moves back.
-                    used = sum(
-                        job.get("task") == "invsqrt"
-                        and job.get("mode") == mode
-                        and bool(job.get("candidate_id"))
-                        and (
-                            job.get("invsqrt_demo_started_at") == demo_scope
-                            or datetime.fromisoformat(job["created_at"]) >= demo_start
-                        )
-                        for job in experiments
-                    )
-                    if used >= limit:
-                        raise WorldError(
-                            "DEMO_BUDGET_EXCEEDED",
-                            f"This demo allows at most {limit} {mode} attempts",
-                        )
-                if (
-                    sum(job["status"] in ("queued", "running") for job in experiments)
-                    >= 8
-                ):
-                    raise WorldError(
-                        "QUEUE_FULL", "At most 8 outstanding experiments allowed"
-                    )
-                candidate = None
-                if params.get("candidate_id"):
-                    candidate = self.store.get(
-                        "candidate", owner, params["candidate_id"]
-                    )
-                    if candidate["task"] != params["task"]:
-                        raise WorldError(
-                            "TASK_MISMATCH", "Candidate belongs to another task"
-                        )
-                job = {
-                    "id": identifier("exp"),
-                    "task": params["task"],
-                    "mode": mode,
-                    "candidate_id": candidate["id"] if candidate else None,
-                    "status": "queued",
-                    "created_at": now(),
-                    "salt": "qw-independent-" + identifier("draw"),
-                    "result": None,
-                    "error": None,
-                }
-                if demo_scope:
-                    job["invsqrt_demo_started_at"] = demo_scope
-                self.store.put("experiment", owner, job)
+                job, candidate = self._queue_experiment(owner, params)
                 schedule = (owner, job, candidate)
                 data = {
                     "experiment_id": job["id"],
@@ -233,6 +186,8 @@ class World:
                     "RESULT_TOO_LARGE", "Result exceeds the protocol budget"
                 )
             self.store.save_action(owner, action_id, request, outcome)
+        if optimization:
+            self.optimizations.start(owner, optimization)
         if schedule:
             self.workers[schedule[1]["id"]] = asyncio.create_task(
                 self._execute(*schedule)
@@ -242,6 +197,69 @@ class World:
             if data["status"] == "cancelled":
                 self.workers.pop(cancel, None)
         return outcome
+
+    def _queue_experiment(self, owner, params, *, optimization_id=None):
+        mode = params["mode"]
+        demo_start = self.settings.invsqrt_demo_started_at
+        demo_scope = demo_start.isoformat() if demo_start is not None else None
+        if demo_scope and (
+            params["task"] != "invsqrt" or not params.get("candidate_id")
+        ):
+            raise WorldError(
+                "DEMO_SCOPE", "This demo accepts only invsqrt candidate experiments"
+            )
+        experiments = [job for _, job in self.store.list("experiment")]
+        if demo_start is not None:
+            limit = 3 if mode == "quick" else 1
+            # The stored scope still identifies attempts if the clock moves back.
+            used = sum(
+                job.get("task") == "invsqrt"
+                and job.get("mode") == mode
+                and bool(job.get("candidate_id"))
+                and (
+                    job.get("invsqrt_demo_started_at") == demo_scope
+                    or datetime.fromisoformat(job["created_at"]) >= demo_start
+                )
+                for job in experiments
+            )
+            if used >= limit:
+                raise WorldError(
+                    "DEMO_BUDGET_EXCEEDED",
+                    f"This demo allows at most {limit} {mode} attempts",
+                )
+        if (
+            sum(job["status"] in ("queued", "running") for job in experiments)
+            >= 8
+        ):
+            raise WorldError(
+                "QUEUE_FULL", "At most 8 outstanding experiments allowed"
+            )
+        candidate = None
+        if params.get("candidate_id"):
+            candidate = self.store.get(
+                "candidate", owner, params["candidate_id"]
+            )
+            if candidate["task"] != params["task"]:
+                raise WorldError(
+                    "TASK_MISMATCH", "Candidate belongs to another task"
+                )
+        job = {
+            "id": identifier("exp"),
+            "task": params["task"],
+            "mode": mode,
+            "candidate_id": candidate["id"] if candidate else None,
+            "status": "queued",
+            "created_at": now(),
+            "salt": "qw-independent-" + identifier("draw"),
+            "result": None,
+            "error": None,
+        }
+        if demo_scope:
+            job["invsqrt_demo_started_at"] = demo_scope
+        if optimization_id:
+            job["optimization_id"] = optimization_id
+        self.store.put("experiment", owner, job)
+        return job, candidate
 
     def _candidate(self, owner, params):
         files = params["files"]
@@ -328,7 +346,10 @@ class World:
             )
         finally:
             job["finished_at"] = now()
-            self.store.put("experiment", owner, job)
+            with self.store.transaction():
+                self.store.put("experiment", owner, job)
+                if job.get("optimization_id"):
+                    self.optimizations.enqueue_result(owner, job, candidate)
             self.workers.pop(job_id, None)
 
     def _package(self, owner, experiment_ids):
@@ -388,6 +409,7 @@ class World:
         return package
 
     async def close(self):
+        await self.optimizations.close()
         tasks = list(self.workers.values())
         for owner, job in [] if self.administrative else self.store.list("experiment"):
             if job["status"] == "queued":

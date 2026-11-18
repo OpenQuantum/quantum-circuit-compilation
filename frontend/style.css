@@ -516,6 +516,40 @@ input[type=checkbox] {
   color:#9ba9ae
 }
 
+.optimization-panel {
+  margin-bottom: 20px;
+}
+
+.optimization-runs {
+  display: grid;
+  gap: 8px;
+}
+
+.optimization-run {
+  padding: 14px 16px;
+}
+
+.optimization-run p {
+  margin: 5px 0;
+}
+
+.optimization-run .artifacts li {
+  display: block;
+  overflow-wrap: anywhere;
+}
+
+.optimization-run [data-open-experiment] {
+  margin: 0 5px;
+  overflow-wrap: anywhere;
+}
+
+.optimization-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
 .list-toolbar {
   display:flex;
   align-items:center;
