@@ -239,3 +239,36 @@ async def test_read_only_console_rejects_all_mutations_before_forwarding(tmp_pat
                 assert response.status_code == 403
                 assert response.json()["data"]["code"] == "CONSOLE_READ_ONLY"
     assert calls == []
+
+
+async def test_real_trajectory_is_scoped_and_omits_source(console):
+    client, world, _, _ = console
+    owner = canonical(["real-agent", "alice"])
+    world.store.save_action(owner, "action-one", canonical({
+        "name": "CreateCandidate", "params": {"task": "dqi", "files": {"secret.py": "SOURCE"}, "description": "test method"},
+    }), {"status": "completed", "data": {"text": '{"id":"candidate-one"}'}})
+    assert (await client.get(API + "/trajectory")).status_code == 401
+    await login(client)
+    data = (await client.get(API + "/trajectory")).json()
+    assert data["items"][0]["created_at"]
+    assert data["items"][0]["result"]["id"] == "candidate-one"
+    assert "SOURCE" not in str(data)
+    await login(client, "bob")
+    assert (await client.get(API + "/trajectory", headers={"X-Quantum-User": "alice"})).json()["items"] == []
+
+
+async def test_graph_uses_authenticated_public_research_adapter(console):
+    client, world, _, _ = console
+    calls = []
+    def query(name, params):
+        calls.append((name, params))
+        return {"task": params["task"], "nodes": [{"id": "public-node", "title": "Method", "parents": []}],
+                "scope": "public_and_official_only", "read_only": True}
+    world.research.query = query
+    assert (await client.get(API + "/research?task=dqi")).status_code == 401
+    await login(client)
+    assert (await client.get(API + "/research?task=private")).status_code == 422
+    result = await client.get(API + "/research?task=dqi&node_id=public-node")
+    assert result.status_code == 200
+    assert result.json()["nodes"][0]["id"] == "public-node"
+    assert calls == [("GetResearchNode", {"task": "dqi", "query": "", "limit": 8, "node_id": "public-node"})]

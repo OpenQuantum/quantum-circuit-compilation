@@ -216,6 +216,41 @@ def create_operator_app(
     async def optimizations(user=Depends(identity)):
         return listing("optimization", user)
 
+    @app.get(prefix + "/research")
+    async def research(task: str = Query(pattern="^(invsqrt|dqi|dfthcsos)$"),
+                       query: str = Query(default="", max_length=200),
+                       node_id: str | None = Query(default=None, max_length=200),
+                       user=Depends(identity)):
+        params = {"task": task, "query": query, "limit": 8}
+        if node_id:
+            params["node_id"] = node_id
+        return await asyncio.to_thread(world.research.query,
+                                       "GetResearchNode" if node_id else "SearchResearchMethods", params)
+
+    @app.get(prefix + "/trajectory")
+    async def trajectory(limit: int = Query(default=500, ge=1, le=500), user=Depends(identity)):
+        permitted = sorted(owners(user))
+        placeholders = ",".join("?" for _ in permitted)
+        rows = world.store.db.execute(
+            f"SELECT owner,id,request,outcome,created_at FROM actions WHERE owner IN ({placeholders}) "
+            "ORDER BY rowid DESC LIMIT ?", (*permitted, limit + 1),
+        ).fetchall()
+        items = []
+        for owner, action_id, request, outcome, created_at in rows[:limit]:
+            request, outcome = json.loads(request), json.loads(outcome)
+            params = request.get("params", {})
+            # Never include generator source files or large tool observations.
+            params = {k: v for k, v in params.items() if k in {
+                "task", "query", "node_id", "candidate_id", "experiment_id", "mode",
+                "experiments", "proposals", "changes", "entrypoint", "description",
+            }}
+            data = json.loads(outcome.get("data", {}).get("text", "{}"))
+            refs = {k: data[k] for k in ("id", "candidate_id", "experiment_id", "optimization_id", "status") if k in data}
+            items.append({"id": action_id, "tool": request["name"], "params": params,
+                          "created_at": created_at, "sender_id": json.loads(owner)[0],
+                          "status": outcome.get("status"), "result": refs})
+        return {"items": items, "truncated": len(rows) > limit}
+
     @app.get(prefix + "/experiments")
     async def experiments(user=Depends(identity)):
         return listing("experiment", user)

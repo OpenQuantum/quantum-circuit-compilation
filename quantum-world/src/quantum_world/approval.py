@@ -87,7 +87,7 @@ async def submit(world, package_id, gateway):
         )
         if not receipt.get("submission_ref"):
             raise WorldError("SUBMISSION_UNKNOWN", "No confirmed submission ref")
-        p.update(status="submitted", receipt=receipt)
+        p.update(status="submitted", receipt=receipt, submitted_at=now())
     except BaseException:
         p.update(
             status="unknown",

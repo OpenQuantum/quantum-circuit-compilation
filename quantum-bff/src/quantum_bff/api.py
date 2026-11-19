@@ -46,6 +46,22 @@ async def optimizations(request: Request, user=Depends(current_user)):
     return await client(request).request(user, "GET", "/optimizations")
 
 
+@router.get("/research")
+async def research(request: Request, task: str = Query(pattern="^(invsqrt|dqi|dfthcsos)$"),
+                   query: str = Query(default="", max_length=200),
+                   node_id: str | None = Query(default=None, max_length=200),
+                   user=Depends(current_user)):
+    params = {"task": task, "query": query}
+    if node_id:
+        params["node_id"] = node_id
+    return await client(request).request(user, "GET", "/research", params=params)
+
+
+@router.get("/trajectory")
+async def trajectory(request: Request, user=Depends(current_user)):
+    return await client(request).request(user, "GET", "/trajectory")
+
+
 @router.get("/experiments")
 async def experiments(request: Request, user=Depends(current_user)):
     return await client(request).request(user, "GET", "/experiments")

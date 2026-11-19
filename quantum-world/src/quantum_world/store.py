@@ -37,6 +37,10 @@ class Store:
             PRIMARY KEY(owner,id));
         """)
 
+        columns = {row[1] for row in self.db.execute("PRAGMA table_info(actions)")}
+        if "created_at" not in columns:
+            self.db.execute("ALTER TABLE actions ADD COLUMN created_at TEXT")
+
     @contextmanager
     def transaction(self):
         self.db.execute("BEGIN IMMEDIATE")
@@ -98,8 +102,8 @@ class Store:
 
     def save_action(self, owner, action_id, request, outcome):
         self.db.execute(
-            "INSERT INTO actions VALUES(?,?,?,?)",
-            (owner, action_id, request, canonical(outcome)),
+            "INSERT INTO actions(owner,id,request,outcome,created_at) VALUES(?,?,?,?,?)",
+            (owner, action_id, request, canonical(outcome), now()),
         )
 
     def recover(self):
